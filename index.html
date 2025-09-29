@@ -4,6 +4,7 @@
   <base target="_top">
   <meta charset="UTF-8">
   <title>Líderes Jhonny Perdomo</title>
+  <!-- Favicon -->
   <link rel="icon" href="https://res.cloudinary.com/dqqeavica/image/upload/v1753538807/JHONNY_PERDOMO_dn3dah.png" type="image/png">
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -55,6 +56,7 @@
     #contactosForm {
       margin: 30px auto 0 auto; max-width: 400px; background: rgba(255,255,255,0.97);
       border-radius: 12px; box-shadow: 0 0 8px rgba(0,0,0,0.2); padding: 24px 16px 10px 16px; display: block;
+      transition: opacity .25s ease, transform .25s ease;
     }
     #contactosForm label { font-weight: bold; color: #1257b7; }
     #contactosForm input[type="number"] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #888; margin-bottom: 7px; margin-top: 2px; }
@@ -126,9 +128,58 @@
     main.container, #tablaReferidos, .table, .table-responsive { }
     #contactosForm { z-index: 10; }
     body, html { align-items: flex-start !important; }
+
+    /* Loader centrado (overlay efecto iOS, 12 barras) */
+    .loader{
+      position:fixed; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.35);
+      z-index:9999; backdrop-filter: blur(2px);
+      opacity:1; transition: opacity .12s ease;
+      will-change: opacity;
+    }
+    .loader.hidden{
+      display:flex !important;
+      opacity:0; pointer-events:none;
+    }
+    .spinner-ios{
+      position:relative; width:64px; height:64px;
+    }
+    .spinner-ios i{
+      position:absolute; left:50%; top:50%;
+      width:6px; height:18px; margin:-9px 0 0 -3px;
+      background:#fff; border-radius:3px;
+      opacity:.2;
+      animation:iosFade 1.2s linear infinite;
+      transform-origin: center center;
+    }
+    @keyframes iosFade{
+      0%, 39%, 100% { opacity:.2; }
+      40% { opacity:1; }
+    }
+    .spinner-ios i:nth-child(1)  { transform: rotate(  0deg) translateY(-24px); animation-delay:-1.1s; }
+    .spinner-ios i:nth-child(2)  { transform: rotate( 30deg) translateY(-24px); animation-delay:-1.0s; }
+    .spinner-ios i:nth-child(3)  { transform: rotate( 60deg) translateY(-24px); animation-delay:-0.9s; }
+    .spinner-ios i:nth-child(4)  { transform: rotate( 90deg) translateY(-24px); animation-delay:-0.8s; }
+    .spinner-ios i:nth-child(5)  { transform: rotate(120deg) translateY(-24px); animation-delay:-0.7s; }
+    .spinner-ios i:nth-child(6)  { transform: rotate(150deg) translateY(-24px); animation-delay:-0.6s; }
+    .spinner-ios i:nth-child(7)  { transform: rotate(180deg) translateY(-24px); animation-delay:-0.5s; }
+    .spinner-ios i:nth-child(8)  { transform: rotate(210deg) translateY(-24px); animation-delay:-0.4s; }
+    .spinner-ios i:nth-child(9)  { transform: rotate(240deg) translateY(-24px); animation-delay:-0.3s; }
+    .spinner-ios i:nth-child(10) { transform: rotate(270deg) translateY(-24px); animation-delay:-0.2s; }
+    .spinner-ios i:nth-child(11) { transform: rotate(300deg) translateY(-24px); animation-delay:-0.1s; }
+    .spinner-ios i:nth-child(12) { transform: rotate(330deg) translateY(-24px); animation-delay: 0s; }
   </style>
 </head>
 <body>
+  <!-- Loader iOS -->
+  <div id="loader" class="loader hidden" aria-live="polite" aria-busy="true">
+    <div class="spinner-ios" role="status" aria-label="Cargando">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+  </div>
+
   <!-- Formulario de Validación -->
   <form id="contactosForm">
     <div class="titulo-contenedor">
@@ -142,7 +193,7 @@
     <input type="number" id="documento" name="documento" placeholder="Sin puntos ni espacios" required min="100000" max="9999999999">
     <p style="color: black; text-align: justify;"><b>Ingresa tu Documento para ingresar continuar</b></p>
     <div id="errorMensaje" class="error"></div>
-    <button type="button" class="boton-efecto" onclick="validarDocumento()"><big><b>Iniciar Sesión</b></big></button>
+    <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()"><big><b>Iniciar Sesión</b></big></button>
     <div class="image-container">
       <img id="imagePreview" src="https://res.cloudinary.com/dqqeavica/image/upload/v1753538919/BANNER_JHONNY_e0yw7m.png" alt="Preview Image">
     </div>
@@ -164,7 +215,7 @@
           <div class="copyright" style="font-size:0.65em;">
             Copyright © <a href="https://wa.me/573103230712" target="_blank"><b>OSCAR POLANIA</b></a>
           </div>
-          <button class="boton-efecto" onclick="cerrarSesion()" style="background:#C0392B;">Cerrar Sesión</button>
+          <button class="boton-efecto" id="btn-cerrar-sesion" onclick="cerrarSesion()" style="background:#C0392B;">Cerrar Sesión</button>
         </div>
       </div>
     </div>
@@ -254,29 +305,88 @@
     // 1) URL del Web App (actualiza si despliegas nueva versión)
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyOG2Neo5ebGJ1Xd2bXCh6EysKp8wyu_gx-4pRs9_75tBju8SOU6zqIC7RRN7ByS7aHTg/exec';
 
+    // 1.1) Sonidos (mismo set que usas en el portal)
+    const SOUNDS = {
+      question: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Pay_fail_ls2aif.mp3',
+      info: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Default_notification_pkp4wr.mp3',
+      success: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Pay_success_t5aawh.mp3',
+      error: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Low_battery_d5qua1.mp3',
+      warning: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Low_battery_d5qua1.mp3',
+      resumen: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Charging_clkgcd.mp3',
+      login: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Siri_star_g1owy4.mp3',
+      logout: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Siri_End_kelv02.mp3',
+      back: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Keyboard_Enter_b9k2dc.mp3'
+    };
+    function playSoundOnce(url){
+      try{
+        const a = new Audio(url);
+        a.preload = 'auto';
+        a.play().catch(()=>{});
+      }catch(e){}
+    }
+    // 1.2) Parchear SweetAlert2 para sonar según icono
+    if (window.Swal && typeof Swal.fire === 'function'){
+      const __fire = Swal.fire.bind(Swal);
+      Swal.fire = function(options = {}, ...rest){
+        try{
+          if (options.soundTag === 'resumen'){
+            playSoundOnce(SOUNDS.resumen);
+          } else {
+            const icon = options.icon || options.type;
+            if (icon && SOUNDS[icon]) playSoundOnce(SOUNDS[icon]);
+          }
+        }catch(e){}
+        return __fire(options, ...rest);
+      }
+    }
+
+    // 1.3) Loader centrado (smart delay)
+    const loader = document.getElementById('loader');
+    let loadingCount = 0, loaderTimer = null;
+    function startLoading(){
+      loadingCount++;
+      if (loadingCount === 1){
+        loaderTimer = setTimeout(()=>{ loader.classList.remove('hidden'); loaderTimer = null; }, 120);
+      }
+    }
+    function stopLoading(){
+      if (loadingCount === 0) return;
+      loadingCount--;
+      if (loadingCount === 0){
+        if (loaderTimer){ clearTimeout(loaderTimer); loaderTimer = null; }
+        loader.classList.add('hidden');
+      }
+    }
+
     // 2) Adaptadores API (fetch)
     async function apiValidarLider(documento) {
-      const url = new URL(WEB_APP_URL);
-      url.searchParams.set('action', 'validarLider');
-      url.searchParams.set('documento', documento);
-      const resp = await fetch(url.toString(), { method: 'GET' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      return await resp.json();
+      startLoading();
+      try{
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set('action', 'validarLider');
+        url.searchParams.set('documento', documento);
+        const resp = await fetch(url.toString(), { method: 'GET' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return await resp.json();
+      } finally { stopLoading(); }
     }
 
     async function apiGuardarVotacion({ idxFila, nuip, departamento, municipio, puesto, direccion, mesa }) {
-      const body = new URLSearchParams({
-        action: 'guardarVotacion',
-        idxFila: idxFila != null ? String(idxFila) : '',
-        nuip, departamento, municipio, puesto, direccion, mesa
-      });
-      const resp = await fetch(WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      return await resp.json();
+      startLoading();
+      try{
+        const body = new URLSearchParams({
+          action: 'guardarVotacion',
+          idxFila: idxFila != null ? String(idxFila) : '',
+          nuip, departamento, municipio, puesto, direccion, mesa
+        });
+        const resp = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return await resp.json();
+      } finally { stopLoading(); }
     }
 
     // ----- VARIABLES GLOBALES -----
@@ -309,6 +419,9 @@
         if (navigator.clipboard) { navigator.clipboard.writeText(documento).catch(()=>{}); }
       }
 
+      // Sonido al intentar login
+      if (!soloTabla) playSoundOnce(SOUNDS.login);
+
       Swal.fire({
         title: 'Buscando...',
         html: 'Por favor espera unos segundos.',
@@ -324,7 +437,7 @@
         if (!res.existe) {
           Swal.fire({
             icon: 'error',
-            title: 'Este Portal es de uso exclusivo de los Lideres de Jhonny Perdomo',
+            title: 'Este Portal es de uso exclusivo de los Líderes de Jhonny Perdomo',
             html: 'Ponte en contacto con el Equipo del Hacer.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>',
             width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' }
           });
@@ -367,6 +480,7 @@
       document.getElementById('mainTableContainer').style.display = 'block';
     }
     function cerrarSesion() {
+      playSoundOnce(SOUNDS.logout);
       nombreLider = "";
       filasFiltradas = [];
       encabezados = [];
@@ -594,6 +708,10 @@
       window.open(whatsappUrl, "_blank");
       bootstrap.Modal.getInstance(document.getElementById('modalWhatsapp')).hide();
     });
+
+    // Sonidos en botones clave
+    document.getElementById('btn-iniciar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.login));
+    document.getElementById('btn-cerrar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.logout));
   </script>
 </body>
 </html>
