@@ -585,46 +585,58 @@
   };
 
   const btnConfirmar = {
-    text: `Confirmar <span class="ms-1 align-middle">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-      </svg>
-    </span>`,
-    className: 'btn btn-danger d-none',
-    attr: { id: 'btnConfirmarEliminacion' },
-    action: async function(e, dt) {
-      if (selectedNuips.size === 0) {
-        Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
-        return;
-      }
-      try {
-        Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        const nuips = Array.from(selectedNuips);
-        const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
-        Swal.close();
-
-        if (!res || res.ok !== true) {
-          throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
-        }
-
-        playSoundOnce(SOUNDS.success);
-        Swal.fire({
-          icon: 'success',
-          title: 'Listo',
-          text: (res.eliminadas || 0) + ' fila(s) eliminada(s).',
-          timer: 2200,
-          showConfirmButton: false,
-          customClass: { popup: 'swal2-responsive-popup' }
-        });
-
-        // Salir del modo y recargar como ADMINISTRADOR
-        exitDeleteMode(dt);
-        await validarDocumento(true);
-      } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
-      }
+  text: `Confirmar <span class="ms-1 align-middle">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+    </svg>
+  </span>`,
+  className: 'btn btn-danger d-none',
+  attr: { id: 'btnConfirmarEliminacion' },
+  action: async function(e, dt) {
+    if (selectedNuips.size === 0) {
+      Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
+      return;
     }
-  };
+
+    // Guarda la selección actual antes de limpiar estado
+    const nuips = Array.from(selectedNuips);
+
+    try {
+      Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
+      Swal.close();
+
+      if (!res || res.ok !== true) {
+        throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
+      }
+
+      // 1) Actualiza la tabla local al instante (como feedback inmediato)
+      dt.rows(function(idx, data) {
+        return nuips.includes(String((data && data[0]) || ''));
+      }).remove().draw(false);
+
+      // 2) Sal del modo eliminación (igual que Descartar)
+      exitDeleteMode(dt);
+
+      // 3) Alerta de éxito con el mismo estilo/sonido que "Guardar votación"
+      playSoundOnce(SOUNDS.success);
+      Swal.fire({
+        icon: 'success',
+        title: '¡Fila(s) eliminada(s)!',
+        html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>La tabla se actualizará en segundos.<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
+        timer: 3500,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-responsive-popup' },
+        didClose: async () => {
+          // 4) Refresca la tabla desde el servidor para ADMINISTRADOR (igual lógica)
+          await validarDocumento(true);
+        }
+      });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
+    }
+  }
+};
 
   const btnDescartar = {
     text: `Descartar <span class="ms-1 align-middle">
