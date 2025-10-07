@@ -171,6 +171,12 @@
     .spinner-ios i:nth-child(10) { transform: rotate(270deg) translateY(-24px); animation-delay:-0.2s; }
     .spinner-ios i:nth-child(11) { transform: rotate(300deg) translateY(-24px); animation-delay:-0.1s; }
     .spinner-ios i:nth-child(12) { transform: rotate(330deg) translateY(-24px); animation-delay: 0s; }
+
+    /* Vistas: ocultas por defecto; la activa se muestra */
+    .view { display: none; }
+    .view.active { display: block; }
+    /* Ocultar login al cargar; JS decide qué mostrar */
+    #contactosForm { display: none !important; }
   </style>
 </head>
 <body>
@@ -638,7 +644,7 @@
   const btnDescartar = {
     text: `Descartar <span class="ms-1 align-middle">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0 2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
       </svg>
     </span>`,
     className: 'btn btn-secondary d-none',
@@ -911,6 +917,25 @@
     if (v) v.classList.add('active');
   }
 
+  // NUEVO: funciones para alternar vistas
+  function showInstallView(){
+    // Oculta login y tabla, muestra vista de instalación
+    const form = document.getElementById('contactosForm');
+    const table = document.getElementById('mainTableContainer');
+    if (form) form.style.display = 'none';
+    if (table) table.style.display = 'none';
+    activateView('view-instalar');
+    updateInstallButtonsVisibility();
+  }
+  function showLoginView(){
+    // Oculta vistas "view" y muestra el login
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    const form = document.getElementById('contactosForm');
+    const table = document.getElementById('mainTableContainer');
+    if (form) form.style.display = 'block';
+    if (table) table.style.display = 'none';
+  }
+
   window.addEventListener('beforeinstallprompt', (e)=>{
     e.preventDefault();
     deferredPrompt = e;
@@ -921,6 +946,8 @@
     deferredPrompt = null;
     updateInstallButtonsVisibility();
     try{ Swal.fire({ icon:'success', title:'¡App instalada!', timer:1700, showConfirmButton:false }); }catch(_){}
+    // Al instalar, saltar al login
+    showLoginView();
   });
 
   installButtons.forEach(btn=>{
@@ -961,17 +988,27 @@
   // Enlace directo: https://tu-sitio/index2.html#instalar
   (function(){
     function openInstallIfHash(){
-      if (location.hash !== '#instalar') return;
-      try{ overlay.classList.remove('open'); }catch(_){}
-      activateView('view-instalar');
-      updateInstallButtonsVisibility();
+      if (location.hash === '#instalar') {
+        try{ overlay.classList.remove('open'); }catch(_){}
+        showInstallView(); // Fuerza la vista de instalación si viene con hash
+        return;
+      }
     }
     window.addEventListener('load', openInstallIfHash);
     window.addEventListener('hashchange', openInstallIfHash);
   })();
 
-  // Inicial
-  updateInstallButtonsVisibility();
+  // Inicial: decidir vista al cargar
+  window.addEventListener('load', () => {
+    if (location.hash === '#instalar') {
+      showInstallView();
+    } else if (isStandalone()) {
+      showLoginView();
+    } else {
+      showInstallView();
+    }
+    updateInstallButtonsVisibility();
+  });
 </script>
 </body>
 </html>
