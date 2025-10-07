@@ -7,7 +7,6 @@
   <!-- Favicon -->
   <link rel="icon" href="https://res.cloudinary.com/dqqeavica/image/upload/v1759868680/Lideres_edfxpn.png" type="image/png">
   <meta name="theme-color" content="#007BFF" />
-<link rel="manifest" href="manifest.webmanifest" />
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- DataTables y Bootstrap -->
@@ -79,7 +78,7 @@
     #tablaReferidos { width: 100% !important; background: rgba(255,255,255,0.98); border-radius: 10px; margin-top: 20px; }
     .btn-votacion { background-color: #e74c3c !important; color: white !important; border-radius: 6px !important; font-weight: bold; font-size: 1em; padding: 3px 10px !important; margin-right: 3px; }
     .btn-votacion.verde { background-color: #27ae60 !important; }
-    .btn-whatsapp { background: #25D366 !important; color: white !important; border-radius: 6px !important; font-size: 1.15em !important; padding: 3px 10px !important; margin-left: 3px; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-whatsapp { background: #25D366 !important; color: white !important; border-radius: 6px !important; font-size: 1.15em !important; padding: 3px 10px !important; margin-left: 3px; display: inlin[...] }
     .btn-whatsapp i { font-size: 1.3em !important; color: white !important; vertical-align: middle; }
     .resaltado-lider { background: #e6ffe6 !important; font-weight: bold; transition: background 1.6s; }
     .resaltado-cambio { background: #fff6b2 !important; transition: background 1.6s; }
@@ -96,7 +95,7 @@
     .descripcion-animado { font-size: 1.5rem; font-weight: bold; color: #007BFF; text-shadow: 3px 3px 3px #A9A9A9; animation: rotate 5s infinite linear, stay 10s infinite; }
     .form-description { text-align: center; font-size: 1em; color: #666; margin-bottom: 20px; }
     h1, h2 { text-align: center; margin-bottom: 10px; }
-    .swal2-responsive-popup { max-width: 600px; width: 80%; background-color: white !important; color: black !Important; border: 2px solid #007BFF !important; box-shadow: 0 0 10px rgba(0,0,0,0.5) !important; }
+    .swal2-responsive-popup { max-width: 600px; width: 80%; background-color: white !important; color: black !Important; border: 2px solid #007BFF !important; box-shadow: 0 0 10px rgba(0,0,0,0.5) !imp[...] }
     .swal2-title-custom { color: #007BFF !important; }
     .swal2-content-custom { color: #007BFF !important; }
     .swal2-icon-custom .swal2-icon-content { color: #007BFF !important; }
@@ -118,7 +117,7 @@
     #contactosForm .boton-efecto:hover { background: #007bff !important; color: #fff !important; border-color: #007bff; }
     #contactosForm .image-container { display: flex !important; justify-content: center !important; align-items: center !important; margin: 12px 0 0 0; }
     #contactosForm .image-container img { max-width: 220px; width: 220px; display: block; margin: 0 auto; border-radius: 0; box-shadow: none !important; border: none !important; }
-    #contactosForm .copyright { width: 100%; text-align: center; font-size: 0.90em; color: #444; margin-top: 6px !important; margin-bottom: 0; padding-bottom: 0; line-height: 1.3; letter-spacing: 0.2px; }
+    #contactosForm .copyright { width: 100%; text-align: center; font-size: 0.90em; color: #444; margin-top: 6px !important; margin-bottom: 0; padding-bottom: 0; line-height: 1.3; letter-spacing: 0.2p[...] }
     #contactosForm .copyright a { color: #007bff !important; text-decoration: underline; }
     @media (max-width: 500px) {
       #contactosForm { padding-left: 6px; padding-right: 6px; }
@@ -175,93 +174,7 @@
     /* Vistas: ocultas por defecto; la activa se muestra */
     .view { display: none; }
     .view.active { display: block; }
-    /* Ocultar login al cargar; JS decide qué mostrar */
-    #contactosForm { display: none !important; }
-
-    /* --- Estilos vista de instalación (look Imagen 2) --- */
-#view-instalar{
-  position: relative;
-  min-height: 100vh;
-  width: 100vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 12px;
-}
-#view-instalar::before{
-  content: "";
-  position: fixed;
-  inset: 0;
-  /* velo blanco suave sobre el fondo para ese efecto lavado */
-  background: rgba(255,255,255,.78);
-  backdrop-filter: blur(1.5px);
-  z-index: -1;
-}
-.install-hero{
-  text-align: center;
-  width: min(92vw, 540px);
-  margin-inline: auto;
-}
-.install-hero .hero-title{
-  margin: 0 0 14px 0;
-  font-size: clamp(1.4rem, 2.5vw + 1rem, 2.2rem);
-  letter-spacing: .6px;
-  font-weight: 800;
-  color: #1e88e5; /* azul */
-  text-transform: uppercase;
-  text-shadow: 0 2px 0 rgba(0,0,0,.05);
-}
-.avatar-wrap{
-  width: 220px;
-  height: 220px;
-  margin: 8px auto 14px auto;
-  border-radius: 50%;
-  padding: 8px;                     /* aro verde */
-  background: linear-gradient(135deg, #2e7d32, #67b86a);
-  box-shadow: 0 6px 18px rgba(0,0,0,.15), inset 0 0 0 2px rgba(255,255,255,.35);
-}
-.avatar{
-  width: 100%;
-  height: 100%;
-  display: block;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 8px solid #f4f8f6;        /* aro blanco interno */
-  box-shadow: 0 3px 10px rgba(0,0,0,.15);
-}
-.hashtags{
-  list-style: none;
-  padding: 0;
-  margin: 6px 0 18px 0;
-}
-.hashtags li{
-  margin: 8px 0;
-  font-weight: 800;
-  color: #111;
-}
-.btn-install{
-  appearance: none;
-  border: 0;
-  border-radius: 10px;
-  padding: 12px 22px;
-  font-weight: 800;
-  letter-spacing: .2px;
-  color: #fff;
-  background: linear-gradient(180deg, #1e88e5, #1565c0);
-  box-shadow: 0 10px 22px rgba(30,136,229,.35);
-  cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
-}
-.btn-install:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(21,101,192,.40);
-  filter: brightness(1.03);
-}
-.btn-install:active{ transform: translateY(0); }
-.btn-install .icon{ margin-left: 6px; }
-@media (max-width: 420px){
-  .avatar-wrap{ width: 190px; height: 190px; padding: 7px; }
-}
+    /* NOTA: Se eliminó el ocultamiento forzado del login para que sea visible al cargar */
   </style>
 </head>
 <body>
@@ -554,7 +467,7 @@
           Swal.fire({
             icon: 'error',
             title: 'Este Portal es de uso exclusivo de los Líderes de Jhonny Perdomo',
-            html: 'Ponte en contacto con el Equipo del Hacer.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>',
+            html: 'Ponte en contacto con el Equipo del Hacer.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b[...]',
             width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' }
           });
           mostrarFormulario();
@@ -569,7 +482,7 @@
           Swal.fire({
             icon: 'info',
             title: 'No Tienes Referidos',
-            html: 'Es importante contar con tu apoyo.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>',
+            html: 'Es importante contar con tu apoyo.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></d[...]',
             width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' }
           });
           mostrarFormulario();
@@ -638,8 +551,8 @@
 
   const adminExportButtons = [
     { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-    { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Refer[...]' },
+    { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Refer[...]' },
     { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
     colvisButton
   ];
@@ -680,7 +593,7 @@
   const btnConfirmar = {
   text: `Confirmar <span class="ms-1 align-middle">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 [...]"/>
     </svg>
   </span>`,
   className: 'btn btn-danger d-none',
@@ -729,7 +642,7 @@
   const btnDescartar = {
     text: `Descartar <span class="ms-1 align-middle">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0 2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0 2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a[...]"/>
       </svg>
     </span>`,
     className: 'btn btn-secondary d-none',
@@ -962,152 +875,5 @@
     document.getElementById('btn-iniciar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.login));
     document.getElementById('btn-cerrar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.logout));
   </script>
-
-  
-  <section id="view-instalar" class="view">
-  <div class="install-hero">
-    <h1 class="hero-title">LIDERES JHONNY</h1>
-
-    <div class="avatar-wrap">
-      <img
-        class="avatar"
-        src="https://res.cloudinary.com/dqqeavica/image/upload/v1759866481/LIDERES_txzx4b.gif"
-        alt="Jhonny Perdomo"
-      />
-    </div>
-
-    <ul class="hashtags">
-      <li>#SoyDeFlandes</li>
-      <li>#NoParamos</li>
-      <li>#SiemprePresentes</li>
-    </ul>
-
-    <button class="btn-install" id="btn-instalar-standalone">
-      Instalar la App <span class="icon">📱</span>
-    </button>
-  </div>
-</section>
-
-  
-  <script>
-  // --- PWA mínimo para instalar desde Android/desktop e instrucciones iOS ---
-  let deferredPrompt = null;
-  const installButtons = Array.from(document.querySelectorAll('#btn-instalar, #btn-instalar-standalone'));
-
-  function isStandalone(){
-    return window.matchMedia('(display-mode: standalone)').matches
-        || window.matchMedia('(display-mode: installed)').matches
-        || (window.navigator.standalone === true);
-  }
-  function isIOS(){
-    return /(iphone|ipad|ipod)/i.test(navigator.userAgent || '');
-  }
-  function updateInstallButtonsVisibility(){
-    const shouldShow = !isStandalone() && (isIOS() || !!deferredPrompt);
-    installButtons.forEach(btn => { if (btn) btn.style.display = shouldShow ? '' : 'none'; });
-  }
-
-  // Fallback seguro por si showView aún no está disponible
-  function activateView(id){
-    if (typeof showView === 'function') return showView(id);
-    // fallback: activar manualmente la vista
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    const v = document.getElementById(id);
-    if (v) v.classList.add('active');
-  }
-
-  // NUEVO: funciones para alternar vistas
-  function showInstallView(){
-    // Oculta login y tabla, muestra vista de instalación
-    const form = document.getElementById('contactosForm');
-    const table = document.getElementById('mainTableContainer');
-    if (form) form.style.display = 'none';
-    if (table) table.style.display = 'none';
-    activateView('view-instalar');
-    updateInstallButtonsVisibility();
-  }
-  function showLoginView(){
-    // Oculta vistas "view" y muestra el login
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    const form = document.getElementById('contactosForm');
-    const table = document.getElementById('mainTableContainer');
-    if (form) form.style.display = 'block';
-    if (table) table.style.display = 'none';
-  }
-
-  window.addEventListener('beforeinstallprompt', (e)=>{
-    e.preventDefault();
-    deferredPrompt = e;
-    updateInstallButtonsVisibility();
-  });
-
-  window.addEventListener('appinstalled', ()=>{
-    deferredPrompt = null;
-    updateInstallButtonsVisibility();
-    try{ Swal.fire({ icon:'success', title:'¡App instalada!', timer:1700, showConfirmButton:false }); }catch(_){}
-    // Al instalar, saltar al login
-    showLoginView();
-  });
-
-  installButtons.forEach(btn=>{
-    if (!btn) return;
-    btn.addEventListener('click', async ()=>{
-      // iOS: no hay prompt nativo
-      if (isIOS()){
-        try{
-          Swal.fire({
-            icon:'info',
-            title:'Instalar en iPhone/iPad',
-            html:'1) Toca Compartir (cuadro con flecha).<br>2) Elige "Agregar a pantalla de inicio".<br>3) Confirma "Agregar".'
-          });
-        }catch(_){
-          alert('En iPhone/iPad: Compartir → Agregar a pantalla de inicio.');
-        }
-        return;
-      }
-      // Android/desktop Chromium
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice.catch(()=>({ outcome:'dismissed' }));
-      deferredPrompt = null;
-      updateInstallButtonsVisibility();
-      if (choice && choice.outcome === 'accepted'){
-        try{ Swal.fire({ icon:'success', title:'¡App instalándose!', timer:1700, showConfirmButton:false }); }catch(_){}
-      }
-    });
-  });
-
-  // Service Worker (usa tu sw.js en la raíz)
-  if ('serviceWorker' in navigator){
-    window.addEventListener('load', ()=>{
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    });
-  }
-
-  // Enlace directo: https://tu-sitio/index2.html#instalar
-  (function(){
-    function openInstallIfHash(){
-      if (location.hash === '#instalar') {
-        try{ overlay.classList.remove('open'); }catch(_){}
-        showInstallView(); // Fuerza la vista de instalación si viene con hash
-        return;
-      }
-    }
-    window.addEventListener('load', openInstallIfHash);
-    window.addEventListener('hashchange', openInstallIfHash);
-  })();
-
-  // Inicial: decidir vista al cargar
-  window.addEventListener('load', () => {
-    if (location.hash === '#instalar') {
-      showInstallView();
-    } else if (isStandalone()) {
-      showLoginView();
-    } else {
-      showInstallView();
-    }
-    updateInstallButtonsVisibility();
-  });
-</script>
 </body>
 </html>
