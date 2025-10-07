@@ -598,7 +598,6 @@
       return;
     }
 
-    // Guarda la selección actual antes de limpiar estado
     const nuips = Array.from(selectedNuips);
 
     try {
@@ -610,27 +609,23 @@
         throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
       }
 
-      // 1) Actualiza la tabla local al instante (como feedback inmediato)
+      // 1) Quitar filas localmente (feedback inmediato)
       dt.rows(function(idx, data) {
         return nuips.includes(String((data && data[0]) || ''));
       }).remove().draw(false);
 
-      // 2) Sal del modo eliminación (igual que Descartar)
+      // 2) Salir del modo eliminación
       exitDeleteMode(dt);
 
-      // 3) Alerta de éxito con el mismo estilo/sonido que "Guardar votación"
+      // 3) Alerta igual que Guardar (sin recargar tabla)
       playSoundOnce(SOUNDS.success);
       Swal.fire({
         icon: 'success',
-        title: '¡Fila(s) eliminada(s)!',
-        html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>La tabla se actualizará en segundos.<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
+        title: 'Fila o filas eliminadas',
+        html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
         timer: 3500,
         showConfirmButton: false,
-        customClass: { popup: 'swal2-responsive-popup' },
-        didClose: async () => {
-          // 4) Refresca la tabla desde el servidor para ADMINISTRADOR (igual lógica)
-          await validarDocumento(true);
-        }
+        customClass: { popup: 'swal2-responsive-popup' }
       });
     } catch (err) {
       Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
