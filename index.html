@@ -229,6 +229,26 @@
 
 /* Evita que <big> altere el tamaño dentro del botón */
 #contactosForm #btn-iniciar-sesion big { font-size: inherit; }
+
+    /* Centrado perfecto del botón y mejora tipográfica */
+#contactosForm .btn-center{
+  display: flex;
+  justify-content: center;   /* centra horizontalmente */
+}
+
+#contactosForm #btn-iniciar-sesion{
+  width: auto !important;    /* anula el width:100% heredado */
+  display: inline-block !important;
+  margin: 8px 0 12px 0;      /* separación */
+  padding: 10px 22px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: .3px;
+  border-radius: 8px;
+}
+
+#contactosForm #btn-iniciar-sesion big { font-size: inherit; } /* por si queda <big> */
+    
   </style>
 </head>
 <body>
@@ -270,7 +290,11 @@
       </button>
     </div>
     <div id="errorMensaje" class="error"></div>
-    <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()"><big><b>Iniciar Sesión</b></big></button>
+    <div class="btn-center">
+  <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()">
+    Iniciar Sesión
+  </button>
+</div>
     <div class="image-container">
       <img id="imagePreview" src="https://res.cloudinary.com/dqqeavica/image/upload/v1753538919/BANNER_JHONNY_e0yw7m.png" alt="Preview Image">
     </div>
