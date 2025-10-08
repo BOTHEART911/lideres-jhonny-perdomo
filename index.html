@@ -214,6 +214,21 @@
       width: max-content;
       margin: 0 auto 12px;
     }
+
+    /* Centrar y mejorar tipografía del botón Iniciar Sesión (solo este) */
+#contactosForm #btn-iniciar-sesion {
+  display: block;
+  width: max-content;        /* se ajusta al texto */
+  margin: 8px auto 12px;     /* centra horizontalmente */
+  padding: 10px 22px;        /* un poco más de aire */
+  font-weight: 800;          /* letra más marcada */
+  font-size: 1.15rem;        /* tamaño ligeramente mayor */
+  letter-spacing: .3px;      /* mejor legibilidad */
+  border-radius: 8px;        /* bordes suaves */
+}
+
+/* Evita que <big> altere el tamaño dentro del botón */
+#contactosForm #btn-iniciar-sesion big { font-size: inherit; }
   </style>
 </head>
 <body>
