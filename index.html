@@ -171,6 +171,43 @@
     .spinner-ios i:nth-child(10) { transform: rotate(270deg) translateY(-24px); animation-delay:-0.2s; }
     .spinner-ios i:nth-child(11) { transform: rotate(300deg) translateY(-24px); animation-delay:-0.1s; }
     .spinner-ios i:nth-child(12) { transform: rotate(330deg) translateY(-24px); animation-delay: 0s; }
+
+    /* Mantener mismo ancho y estilo que antes, ahora para password */
+#contactosForm input[type="password"] {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  font-size: 1em;
+  margin-bottom: 10px;
+  margin-top: 1px;
+}
+
+/* Contenedor y botón del toggle */
+.input-pass-group {
+  position: relative;
+  width: 100%;
+}
+.input-pass-group input {
+  width: 100%;
+  padding-right: 42px; /* espacio para el botón */
+}
+.input-pass-group .toggle-pass {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
+  line-height: 0;
+  color: #007bff;
+}
+.input-pass-group .toggle-pass:focus-visible {
+  outline: 2px solid #80bdff;
+  border-radius: 4px;
+}
   </style>
 </head>
 <body>
@@ -192,8 +229,25 @@
       <i>Equipo del Hacer</i>
     </p>
     <label for="documento"><big><b>Documento:</b></big></label>
-    <input type="number" id="documento" name="documento" placeholder="Sin puntos ni espacios" required min="100000" max="9999999999">
-    <p style="color: black; text-align: justify;"><b>Ingresa tu Documento para ingresar</b></p>
+    <div class="input-pass-group">
+  <input
+    type="password"
+    id="documento"
+    name="documento"
+    placeholder="Sin puntos ni espacios"
+    required
+    inputmode="numeric"
+    pattern="[0-9]*"
+    autocomplete="off"
+  />
+  <button type="button" id="toggleDocumento" class="toggle-pass" aria-label="Mostrar/Ocultar documento" aria-controls="documento" aria-pressed="false" title="Mostrar/Ocultar">
+    <!-- OJO CERRADO (inicial: oculto) -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+      <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+    </svg>
+  </button>
+</div>
     <div id="errorMensaje" class="error"></div>
     <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()"><big><b>Iniciar Sesión</b></big></button>
     <div class="image-container">
