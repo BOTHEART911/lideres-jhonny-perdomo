@@ -7,12 +7,12 @@
   <!-- Favicon -->
   <link rel="icon" href="https://res.cloudinary.com/dqqeavica/image/upload/v1759866552/NOTIFICACIONES_zzkfn0.jpg" type="image/png">
   <meta name="theme-color" content="#007BFF" />
-  <link rel="manifest" href="manifest.webmanifest" />
+<link rel="manifest" href="manifest.webmanifest" />
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- DataTables y Bootstrap -->
   <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css">
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.3/css/buttons.dataTables.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.css">
@@ -55,8 +55,6 @@
     @keyframes stay { 0%, 25% { transform: rotateY(0deg);} 50%, 75% { transform: rotateY(0deg);} 100% { transform: rotateY(360deg);} }
     .image-container img { max-width: 220px; border-radius: 2px; }
     .copyright { font-size: 0.85em; color: #666; margin-top: 4px; text-align: center; }
-
-    /* Formulario */
     #contactosForm {
       margin: 30px auto 0 auto; max-width: 400px; background: rgba(255,255,255,0.97);
       border-radius: 12px; box-shadow: 0 0 8px rgba(0,0,0,0.2); padding: 24px 16px 10px 16px; display: block;
@@ -173,31 +171,6 @@
     .spinner-ios i:nth-child(10) { transform: rotate(270deg) translateY(-24px); animation-delay:-0.2s; }
     .spinner-ios i:nth-child(11) { transform: rotate(300deg) translateY(-24px); animation-delay:-0.1s; }
     .spinner-ios i:nth-child(12) { transform: rotate(330deg) translateY(-24px); animation-delay: 0s; }
-
-   /* REEMPLAZA el bloque CSS de la vista instalar por este */
-/* Vista instalar: overlay de pantalla completa solo cuando está activa */
-#view-instalar.view{ display:none; }
-#view-instalar.view.active{
-  display:flex;
-  position:fixed; inset:0;
-  align-items:center; justify-content:center;
-  z-index:9990; /* por debajo del loader (9999) */
-  background: rgba(255,255,255,.96);
-  backdrop-filter: blur(2px);
-  padding:16px;
-  text-align:center;
-}
-#view-instalar .install-wrap{ display:flex; flex-direction:column; align-items:center; gap:12px; padding:8px; }
-#view-instalar .brand{ width:220px; border-radius:8px; }
-#view-instalar .tagline{ font-weight:800; color:#111; margin:0 0 4px; }
-
-/* Botón PWA flotante (se mantiene) */
-#pwa-install-btn{
-  position:fixed; right:16px; bottom:16px; z-index:9998;
-  border-radius:999px; padding:10px 14px;
-  box-shadow:0 6px 12px rgba(0,0,0,.18);
-  display:none;
-}
   </style>
 </head>
 <body>
@@ -334,7 +307,7 @@
     // 1) URL del Web App (actualiza si despliegas nueva versión)
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzHRNuyX9hdqg-yz3-Q5E6qu5FRbVJqiBkTbbsGGO1GLKCgdCmEQLprMkup8w1n7AqF/exec';
 
-    // 1.1) Sonidos
+    // 1.1) Sonidos (mismo set que usas en el portal)
     const SOUNDS = {
       question: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Pay_fail_ls2aif.mp3',
       info: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Default_notification_pkp4wr.mp3',
@@ -418,24 +391,27 @@
       } finally { stopLoading(); }
     }
 
-    async function apiEliminarFilas({ documento, nuips }) {
-      startLoading();
-      try {
-        const body = new URLSearchParams({
-          action: 'eliminarFilas',
-          documento: documento || '',
-          nuips: JSON.stringify(nuips || [])
-        });
-        const resp = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        return await resp.json();
-      } finally { stopLoading(); }
-    }
+    // AGREGA esta nueva función de API justo debajo de apiGuardarVotacion()
 
+  async function apiEliminarFilas({ documento, nuips }) {
+    startLoading();
+    try {
+      const body = new URLSearchParams({
+        action: 'eliminarFilas',
+        documento: documento || '',
+        nuips: JSON.stringify(nuips || [])
+      });
+      const resp = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return await resp.json();
+    } finally { stopLoading(); }
+  }
+
+    
     // ----- VARIABLES GLOBALES -----
     let nombreLider = "";
     let filasFiltradas = [];
@@ -443,9 +419,9 @@
     let tabla;
     let documentoGuardado = ""; // Para recarga directa
     let deleteMode = false;
-    let selectedNuips = new Set();
+  let selectedNuips = new Set();
 
-    // Columnas a ocultar por defecto
+    // Columnas a ocultar por defecto (índices de encabezados)
     const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA"];
 
     async function validarDocumento(soloTabla) {
@@ -468,6 +444,7 @@
         if (navigator.clipboard) { navigator.clipboard.writeText(documento).catch(()=>{}); }
       }
 
+      // Sonido al intentar login
       if (!soloTabla) playSoundOnce(SOUNDS.login);
 
       Swal.fire({
@@ -546,190 +523,209 @@
     }
 
     function inicializarTabla() {
-      let colsDT = encabezados.map(header => ({ title: header }));
-      colsDT.push({ title: "Votación" });
-      colsDT.push({ title: "WhatsApp" });
-      colsDT.push({ title: "Seleccionar" });
+  let colsDT = encabezados.map(header => ({ title: header }));
+  colsDT.push({ title: "Votación" });
+  colsDT.push({ title: "WhatsApp" });
+  colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
 
-      $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
-      $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+  $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+  $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
-      let data = filasFiltradas.map(row => [...row, "", "", ""]);
+  // Ajusta data al nuevo número de columnas (3 extras)
+  let data = filasFiltradas.map(row => [...row, "", "", ""]);
 
-      if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-        $('#tablaReferidos').DataTable().destroy();
-        $('#tablaReferidos').empty();
-      }
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+    $('#tablaReferidos').DataTable().destroy();
+    $('#tablaReferidos').empty();
+  }
 
-      const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
+  const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
 
-      const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
-      const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
+  // Botones por rol
+  const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
+  const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
 
-      const adminExportButtons = [
-        { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-        { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-        { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-        { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-        colvisButton
-      ];
+  const adminExportButtons = [
+    { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+    colvisButton
+  ];
 
-      const idxVotacion = colsDT.length - 3;
-      const idxWhatsapp = colsDT.length - 2;
-      const idxSeleccion = colsDT.length - 1;
+  // Índices de las columnas especiales (últimas tres)
+  const idxVotacion = colsDT.length - 3;
+  const idxWhatsapp = colsDT.length - 2;
+  const idxSeleccion = colsDT.length - 1;
 
-      const btnEliminar = {
-        text: `Eliminar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-outline-danger',
-        attr: { id: 'btnEliminarFilas' },
-        action: function(e, dt) {
-          playSoundOnce(SOUNDS.warning);
-          deleteMode = true;
-          selectedNuips.clear();
-          dt.column(idxSeleccion).visible(true);
-          $('#btnEliminarFilas').addClass('d-none');
-          $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
-          Swal.fire({
-            icon: 'warning',
-            title: 'Modo eliminación',
-            text: 'Selecciona una o varias filas para eliminar.',
-            timer: 1800,
-            showConfirmButton: false,
-            customClass: { popup: 'swal2-responsive-popup' }
-          });
-        }
-      };
-
-      const btnConfirmar = {
-        text: `Confirmar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-danger d-none',
-        attr: { id: 'btnConfirmarEliminacion' },
-        action: async function(e, dt) {
-          if (selectedNuips.size === 0) {
-            Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
-            return;
-          }
-          const nuips = Array.from(selectedNuips);
-          try {
-            Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
-            Swal.close();
-            if (!res || res.ok !== true) { throw new Error(res && res.error ? res.error : 'No se pudo eliminar'); }
-            dt.rows(function(idx, data) {
-              return nuips.includes(String((data && data[0]) || ''));
-            }).remove().draw(false);
-            exitDeleteMode(dt);
-            playSoundOnce(SOUNDS.success);
-            Swal.fire({
-              icon: 'success',
-              title: 'Fila o filas eliminadas',
-              html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
-              timer: 3500,
-              showConfirmButton: false,
-              customClass: { popup: 'swal2-responsive-popup' }
-            });
-          } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
-          }
-        }
-      };
-
-      const btnDescartar = {
-        text: `Descartar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-secondary d-none',
-        attr: { id: 'btnDescartarEliminacion' },
-        action: function(e, dt) {
-          playSoundOnce(SOUNDS.back);
-          exitDeleteMode(dt);
-        }
-      };
-
-      const buttonsArr = isAdmin
-        ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
-        : [colvisButton];
-
-      tabla = $('#tablaReferidos').DataTable({
-        language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
-        responsive: false,
-        dom: 'Blfrtip',
-        scrollX: true,
-        autoWidth: true,
-        pagingType: 'full_numbers',
-        lengthMenu: [5, 10, 20, 50, 100],
-        columns: colsDT,
-        data: data,
-        order: [[0, 'asc']],
-        buttons: buttonsArr,
-        columnDefs: [
-          ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
-          {
-            targets: idxVotacion,
-            orderable: false,
-            searchable: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-              var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
-              var colorClass = (municipio === "FLANDES") ? "verde" : "";
-              return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-            }
-          },
-          {
-            targets: idxWhatsapp,
-            orderable: false,
-            searchable: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
-            }
-          },
-          {
-            targets: idxSeleccion,
-            orderable: false,
-            searchable: false,
-            visible: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              const nuip = (row && row[0] != null) ? String(row[0]) : '';
-              const checked = selectedNuips.has(nuip) ? 'checked' : '';
-              return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
-            }
-          }
-        ]
+  // Botones nativos de DataTables para Eliminar / Confirmar / Descartar
+  const btnEliminar = {
+    text: `Eliminar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-outline-danger',
+    attr: { id: 'btnEliminarFilas' },
+    action: function(e, dt) {
+      playSoundOnce(SOUNDS.warning);
+      deleteMode = true;
+      selectedNuips.clear();
+      dt.column(idxSeleccion).visible(true);
+      // Oculta "Eliminar" y muestra los otros
+      $('#btnEliminarFilas').addClass('d-none');
+      $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Modo eliminación',
+        text: 'Selecciona una o varias filas para eliminar.',
+        timer: 1800,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-responsive-popup' }
       });
-
-      tabla.off('draw');
-      tabla.on('draw', centrarEncabezadosTabla);
-      centrarEncabezadosTabla();
-
-      $('#tablaReferidos tbody').off('change', 'input.row-select');
-      $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
-        const nuip = String(this.dataset.nuip || '');
-        if (!nuip) return;
-        if (this.checked) selectedNuips.add(nuip);
-        else selectedNuips.delete(nuip);
-      });
-
-      function exitDeleteMode(dt) {
-        deleteMode = false;
-        selectedNuips.clear();
-        dt.column(idxSeleccion).visible(false);
-        $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
-        $('#btnEliminarFilas').removeClass('d-none');
-      }
     }
+  };
+
+  const btnConfirmar = {
+  text: `Confirmar <span class="ms-1 align-middle">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+    </svg>
+  </span>`,
+  className: 'btn btn-danger d-none',
+  attr: { id: 'btnConfirmarEliminacion' },
+  action: async function(e, dt) {
+    if (selectedNuips.size === 0) {
+      Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
+      return;
+    }
+
+    const nuips = Array.from(selectedNuips);
+
+    try {
+      Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
+      Swal.close();
+
+      if (!res || res.ok !== true) {
+        throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
+      }
+
+      // 1) Quitar filas localmente (feedback inmediato)
+      dt.rows(function(idx, data) {
+        return nuips.includes(String((data && data[0]) || ''));
+      }).remove().draw(false);
+
+      // 2) Salir del modo eliminación
+      exitDeleteMode(dt);
+
+      // 3) Alerta igual que Guardar (sin recargar tabla)
+      playSoundOnce(SOUNDS.success);
+      Swal.fire({
+        icon: 'success',
+        title: 'Fila o filas eliminadas',
+        html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
+        timer: 3500,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-responsive-popup' }
+      });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
+    }
+  }
+};
+
+  const btnDescartar = {
+    text: `Descartar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-secondary d-none',
+    attr: { id: 'btnDescartarEliminacion' },
+    action: function(e, dt) {
+      playSoundOnce(SOUNDS.back);
+      exitDeleteMode(dt);
+    }
+  };
+
+  const buttonsArr = isAdmin
+    ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
+    : [colvisButton];
+
+  // Crea la tabla
+  tabla = $('#tablaReferidos').DataTable({
+    language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
+    responsive: false,
+    dom: 'Blfrtip',
+    scrollX: true,
+    autoWidth: true,
+    pagingType: 'full_numbers',
+    lengthMenu: [5, 10, 20, 50, 100],
+    columns: colsDT,
+    data: data,
+    order: [[0, 'asc']],
+    buttons: buttonsArr,
+    columnDefs: [
+      ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
+      {
+        targets: idxVotacion,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+          var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+          var colorClass = (municipio === "FLANDES") ? "verde" : "";
+          return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+        }
+      },
+      {
+        targets: idxWhatsapp,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
+        }
+      },
+      {
+        targets: idxSeleccion,
+        orderable: false,
+        searchable: false,
+        visible: false, // oculto por defecto
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          const nuip = (row && row[0] != null) ? String(row[0]) : '';
+          const checked = selectedNuips.has(nuip) ? 'checked' : '';
+          return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
+        }
+      }
+    ]
+  });
+
+  tabla.off('draw');
+  tabla.on('draw', centrarEncabezadosTabla);
+  centrarEncabezadosTabla();
+
+  // Delegación para checkboxes de filas
+  $('#tablaReferidos tbody').off('change', 'input.row-select');
+  $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
+    const nuip = String(this.dataset.nuip || '');
+    if (!nuip) return;
+    if (this.checked) selectedNuips.add(nuip);
+    else selectedNuips.delete(nuip);
+  });
+
+  // Helper para salir del modo eliminación (UI + estado)
+  function exitDeleteMode(dt) {
+    deleteMode = false;
+    selectedNuips.clear();
+    dt.column(idxSeleccion).visible(false);
+    $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
+    $('#btnEliminarFilas').removeClass('d-none');
+  }
+}
 
     // ----- ACCIÓN VOTACIÓN -----
     let filaVotacion = null;
@@ -802,6 +798,7 @@
     document.getElementById('datos_row').addEventListener('input', intentarAutocompletar);
     document.getElementById('datos_row').addEventListener('blur', intentarAutocompletar);
 
+    // Guardar o actualizar datos de votación
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
       e.preventDefault();
       const nuip = document.getElementById('nuip').value.trim();
@@ -819,6 +816,7 @@
         const res = await apiGuardarVotacion({ idxFila: filaVotacion, nuip, departamento, municipio, puesto, direccion, mesa });
         if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
+        // Actualiza local: columna MUNICIPIO (índice 7) si corresponde a tu estructura
         let nuevaFila = tabla.row(filaVotacion).data().slice();
         nuevaFila[7] = municipio;
         tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
@@ -874,56 +872,40 @@
     document.getElementById('btn-cerrar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.logout));
   </script>
 
-  <!-- Vista de instalación PWA (#instalar) -->
   <section id="view-instalar" class="view">
-    <div class="install-wrap">
-      <h2 style="color:#007BFF; text-shadow: 0 2px 2px #031732; margin:0 0 8px;">Líderes Jhonny</h2>
-      <img class="brand" alt="App" src="https://res.cloudinary.com/dqqeavica/image/upload/v1759866481/LIDERES_txzx4b.gif" />
-      <p class="tagline">#SoyDeFlandes</p>
-      <p class="tagline">#NoParamos</p>
-      <p class="tagline">#SiemprePresentes</p>
-      <button class="boton-efecto" id="btn-instalar-standalone">Instalar la App 📲</button>
+  <div class="install-wrap">
+    <h2>LIDERES JHONNY</h2>
+    <img class="brand" alt="App" src="https://res.cloudinary.com/dqqeavica/image/upload/v1759866481/LIDERES_txzx4b.gif" />
+    <p class="tagline">#SoyDeFlandes</p>
+    <p class="tagline">#NoParamos</p>
+    <p class="tagline">#SiemprePresentes</p>
+    <div class="btn-row spaced" style="max-width:420px; width:100%; justify-content:center;">
+      <button class="btn-primary" id="btn-instalar-standalone">Instalar la App 📲</button>
     </div>
-  </section>
-
-  <!-- Botón flotante de instalación -->
-  <button id="pwa-install-btn" class="boton-efecto">Instalar la App 📲</button>
-
+  </div>
+</section>
   <script>
-(function(){
-  const installButtons = Array.from(document.querySelectorAll('#pwa-install-btn, #btn-instalar-standalone'));
+  // --- PWA mínimo para instalar desde Android/desktop e instrucciones iOS ---
   let deferredPrompt = null;
+  const installButtons = Array.from(document.querySelectorAll('#btn-instalar, #btn-instalar-standalone'));
 
-  const isIOS = () => /(iphone|ipad|ipod)/i.test(navigator.userAgent || '');
-  const isStandalone = () =>
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: installed)').matches ||
-    (window.navigator.standalone === true);
-
-  function platformHint(){
-    const ua = navigator.userAgent || '';
-    const isAndroid = /android/i.test(ua);
-    const isEdge = /Edg\//.test(ua);
-    const isChrome = /Chrome\//.test(ua) && !isEdge;
-    if (isAndroid){
-      return 'Abre el menú ⋮ y toca "Instalar aplicación".';
-    }
-    if (isEdge){
-      return 'Haz clic en el icono de instalación junto a la barra (⬇) o Menú ⋯ → "Instalar esta aplicación".';
-    }
-    if (isChrome){
-      return 'Haz clic en el icono de instalación junto a la barra (⤓) o Menú ⋮ → "Instalar Líderes Jhonny Perdomo".';
-    }
-    return 'Usa la opción de tu navegador para instalar/añadir a la pantalla de inicio.';
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.matchMedia('(display-mode: installed)').matches
+        || (window.navigator.standalone === true);
   }
-
-  function updateInstallButtonsVisibility(force = false){
-    const shouldShow = !isStandalone() && (force || isIOS() || !!deferredPrompt);
+  function isIOS(){
+    return /(iphone|ipad|ipod)/i.test(navigator.userAgent || '');
+  }
+  function updateInstallButtonsVisibility(){
+    const shouldShow = !isStandalone() && (isIOS() || !!deferredPrompt);
     installButtons.forEach(btn => { if (btn) btn.style.display = shouldShow ? '' : 'none'; });
   }
 
+  // Fallback seguro por si showView aún no está disponible
   function activateView(id){
-    // Solo nuestra vista instalar; no toca tu formulario/tabla
+    if (typeof showView === 'function') return showView(id);
+    // fallback: activar manualmente la vista
     document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
     const v = document.getElementById(id);
     if (v) v.classList.add('active');
@@ -942,56 +924,54 @@
   });
 
   installButtons.forEach(btn=>{
-    if(!btn) return;
+    if (!btn) return;
     btn.addEventListener('click', async ()=>{
+      // iOS: no hay prompt nativo
       if (isIOS()){
         try{
-          return Swal.fire({
+          Swal.fire({
             icon:'info',
             title:'Instalar en iPhone/iPad',
             html:'1) Toca Compartir (cuadro con flecha).<br>2) Elige "Agregar a pantalla de inicio".<br>3) Confirma "Agregar".'
           });
-        }catch(_){ return alert('En iPhone/iPad: Compartir → Agregar a pantalla de inicio.'); }
-      }
-      if (deferredPrompt){
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice.catch(()=>({ outcome:'dismissed' }));
-        deferredPrompt = null;
-        updateInstallButtonsVisibility();
-        if (choice && choice.outcome === 'accepted'){
-          try{ Swal.fire({ icon:'success', title:'¡App instalándose!', timer:1700, showConfirmButton:false }); }catch(_){}
+        }catch(_){
+          alert('En iPhone/iPad: Compartir → Agregar a pantalla de inicio.');
         }
-      } else {
-        // Fallback cuando no hay prompt (p.ej., SW aún no controla la página)
-        try{
-          Swal.fire({ icon:'info', title:'Instalar la App', html: platformHint() });
-        }catch(_){ alert(platformHint()); }
+        return;
+      }
+      // Android/desktop Chromium
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice.catch(()=>({ outcome:'dismissed' }));
+      deferredPrompt = null;
+      updateInstallButtonsVisibility();
+      if (choice && choice.outcome === 'accepted'){
+        try{ Swal.fire({ icon:'success', title:'¡App instalándose!', timer:1700, showConfirmButton:false }); }catch(_){}
       }
     });
   });
 
-  // Service Worker (asegúrate de tener sw.js en la raíz del repo)
+  // Service Worker (usa tu sw.js en la raíz)
   if ('serviceWorker' in navigator){
     window.addEventListener('load', ()=>{
       navigator.serviceWorker.register('./sw.js').catch(()=>{});
     });
   }
 
-  // Ruta #instalar → muestra overlay y fuerza visibilidad del botón
+  // Enlace directo: https://tu-sitio/index2.html#instalar
   (function(){
-    function handleHash(){
-      if (location.hash === '#instalar'){
-        activateView('view-instalar');
-        updateInstallButtonsVisibility(true); // fuerza mostrar aunque no haya prompt aún
-      }
+    function openInstallIfHash(){
+      if (location.hash !== '#instalar') return;
+      try{ overlay.classList.remove('open'); }catch(_){}
+      activateView('view-instalar');
+      updateInstallButtonsVisibility();
     }
-    window.addEventListener('load', handleHash);
-    window.addEventListener('hashchange', handleHash);
+    window.addEventListener('load', openInstallIfHash);
+    window.addEventListener('hashchange', openInstallIfHash);
   })();
 
-  window.addEventListener('load', updateInstallButtonsVisibility);
-  window.addEventListener('pageshow', updateInstallButtonsVisibility);
-})();
+  // Inicial
+  updateInstallButtonsVisibility();
 </script>
 </body>
 </html>
