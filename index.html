@@ -173,41 +173,47 @@
     .spinner-ios i:nth-child(12) { transform: rotate(330deg) translateY(-24px); animation-delay: 0s; }
 
     /* Mantener mismo ancho y estilo que antes, ahora para password */
-#contactosForm input[type="password"] {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #bbb;
-  font-size: 1em;
-  margin-bottom: 10px;
-  margin-top: 1px;
-}
+    #contactosForm input[type="password"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      font-size: 1em;
+      margin-bottom: 10px;
+      margin-top: 1px;
+    }
+    /* Contenedor y botón del toggle */
+    .input-pass-group {
+      position: relative;
+      width: 100%;
+    }
+    .input-pass-group input {
+      width: 100%;
+      padding-right: 42px; /* espacio para el botón */
+    }
+    .input-pass-group .toggle-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      padding: 4px;
+      cursor: pointer;
+      line-height: 0;
+      color: #007bff;
+    }
+    .input-pass-group .toggle-pass:focus-visible {
+      outline: 2px solid #80bdff;
+      border-radius: 4px;
+    }
 
-/* Contenedor y botón del toggle */
-.input-pass-group {
-  position: relative;
-  width: 100%;
-}
-.input-pass-group input {
-  width: 100%;
-  padding-right: 42px; /* espacio para el botón */
-}
-.input-pass-group .toggle-pass {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 0;
-  background: transparent;
-  padding: 4px;
-  cursor: pointer;
-  line-height: 0;
-  color: #007bff;
-}
-.input-pass-group .toggle-pass:focus-visible {
-  outline: 2px solid #80bdff;
-  border-radius: 4px;
-}
+    /* OVERRIDE: Centrar solo el botón Iniciar Sesión (sin afectar otros .boton-efecto) */
+    #contactosForm #btn-iniciar-sesion {
+      display: block;
+      width: max-content;
+      margin: 0 auto 12px;
+    }
   </style>
 </head>
 <body>
@@ -230,24 +236,24 @@
     </p>
     <label for="documento"><big><b>Documento:</b></big></label>
     <div class="input-pass-group">
-  <input
-    type="password"
-    id="documento"
-    name="documento"
-    placeholder="Sin puntos ni espacios"
-    required
-    inputmode="numeric"
-    pattern="[0-9]*"
-    autocomplete="off"
-  />
-  <button type="button" id="toggleDocumento" class="toggle-pass" aria-label="Mostrar/Ocultar documento" aria-controls="documento" aria-pressed="false" title="Mostrar/Ocultar">
-    <!-- OJO CERRADO (inicial: oculto) -->
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
-      <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
-    </svg>
-  </button>
-</div>
+      <input
+        type="password"
+        id="documento"
+        name="documento"
+        placeholder="Sin puntos ni espacios"
+        required
+        inputmode="numeric"
+        pattern="[0-9]*"
+        autocomplete="off"
+      />
+      <button type="button" id="toggleDocumento" class="toggle-pass" aria-label="Mostrar/Ocultar documento" aria-controls="documento" aria-pressed="false" title="Mostrar/Ocultar">
+        <!-- OJO CERRADO (inicial: oculto) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+          <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+        </svg>
+      </button>
+    </div>
     <div id="errorMensaje" class="error"></div>
     <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()"><big><b>Iniciar Sesión</b></big></button>
     <div class="image-container">
@@ -266,12 +272,12 @@
       <div style="display: flex; align-items: center;">
         <div class="header-right" style="display:flex; flex-direction:column; align-items:flex-end; margin-right:12px;">
           <div class="image-container" style="margin-bottom:2px; max-width:110px;">
-            <img id="imagePreview" src="https://res.cloudinary.com/dqqeavica/image/upload/v1753538919/BANNER_JHONNY_e0yw7m.png" alt="Preview Image" style="max-width:140px;">
+            <img id="imagePreview2" src="https://res.cloudinary.com/dqqeavica/image/upload/v1753538919/BANNER_JHONNY_e0yw7m.png" alt="Preview Image" style="max-width:140px;">
           </div>
           <div class="copyright" style="font-size:0.65em;">
             Copyright © <a href="https://wa.me/573103230712" target="_blank"><b>OSCAR POLANIA</b></a>
           </div>
-          <button class="boton-efecto" id="btn-cerrar-sesion" onclick="cerrarSesion()" style="background:#C0392B;">Cerrar Sesión</button>
+          <button class="boton-efecto" id="btn-cerrar-sesion" onclick="cerrarSesion()" style="background:#C0392B; color:#fff;">Cerrar Sesión</button>
         </div>
       </div>
     </div>
@@ -445,27 +451,25 @@
       } finally { stopLoading(); }
     }
 
-    // AGREGA esta nueva función de API justo debajo de apiGuardarVotacion()
+    // Eliminar filas (Admin)
+    async function apiEliminarFilas({ documento, nuips }) {
+      startLoading();
+      try {
+        const body = new URLSearchParams({
+          action: 'eliminarFilas',
+          documento: documento || '',
+          nuips: JSON.stringify(nuips || [])
+        });
+        const resp = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return await resp.json();
+      } finally { stopLoading(); }
+    }
 
-  async function apiEliminarFilas({ documento, nuips }) {
-    startLoading();
-    try {
-      const body = new URLSearchParams({
-        action: 'eliminarFilas',
-        documento: documento || '',
-        nuips: JSON.stringify(nuips || [])
-      });
-      const resp = await fetch(WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      return await resp.json();
-    } finally { stopLoading(); }
-  }
-
-    
     // ----- VARIABLES GLOBALES -----
     let nombreLider = "";
     let filasFiltradas = [];
@@ -473,7 +477,7 @@
     let tabla;
     let documentoGuardado = ""; // Para recarga directa
     let deleteMode = false;
-  let selectedNuips = new Set();
+    let selectedNuips = new Set();
 
     // Columnas a ocultar por defecto (índices de encabezados)
     const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA"];
@@ -577,222 +581,226 @@
     }
 
     function inicializarTabla() {
-  let colsDT = encabezados.map(header => ({ title: header }));
-  colsDT.push({ title: "Votación" });
-  colsDT.push({ title: "WhatsApp" });
-  colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
+      let colsDT = encabezados.map(header => ({ title: header }));
+      colsDT.push({ title: "Votación" });
+      colsDT.push({ title: "WhatsApp" });
+      colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
 
-  $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
-  $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+      $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+      $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
-  // Ajusta data al nuevo número de columnas (3 extras)
-  let data = filasFiltradas.map(row => [...row, "", "", ""]);
+      // Ajusta data al nuevo número de columnas (3 extras)
+      let data = filasFiltradas.map(row => [...row, "", "", ""]);
 
-  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-    $('#tablaReferidos').DataTable().destroy();
-    $('#tablaReferidos').empty();
-  }
-
-  const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
-
-  // Botones por rol
-  const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
-  const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
-
-  const adminExportButtons = [
-    { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-    { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-    { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-    colvisButton
-  ];
-
-  // Índices de las columnas especiales (últimas tres)
-  const idxVotacion = colsDT.length - 3;
-  const idxWhatsapp = colsDT.length - 2;
-  const idxSeleccion = colsDT.length - 1;
-
-  // Botones nativos de DataTables para Eliminar / Confirmar / Descartar
-  const btnEliminar = {
-    text: `Eliminar <span class="ms-1 align-middle">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
-      </svg>
-    </span>`,
-    className: 'btn btn-outline-danger',
-    attr: { id: 'btnEliminarFilas' },
-    action: function(e, dt) {
-      playSoundOnce(SOUNDS.warning);
-      deleteMode = true;
-      selectedNuips.clear();
-      dt.column(idxSeleccion).visible(true);
-      // Oculta "Eliminar" y muestra los otros
-      $('#btnEliminarFilas').addClass('d-none');
-      $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
-      Swal.fire({
-        icon: 'warning',
-        title: 'Modo eliminación',
-        text: 'Selecciona una o varias filas para eliminar.',
-        timer: 1800,
-        showConfirmButton: false,
-        customClass: { popup: 'swal2-responsive-popup' }
-      });
-    }
-  };
-
-  const btnConfirmar = {
-  text: `Confirmar <span class="ms-1 align-middle">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-      <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-    </svg>
-  </span>`,
-  className: 'btn btn-danger d-none',
-  attr: { id: 'btnConfirmarEliminacion' },
-  action: async function(e, dt) {
-    if (selectedNuips.size === 0) {
-      Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
-      return;
-    }
-
-    const nuips = Array.from(selectedNuips);
-
-    try {
-      Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
-      Swal.close();
-
-      if (!res || res.ok !== true) {
-        throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
+      if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+        $('#tablaReferidos').DataTable().destroy();
+        $('#tablaReferidos').empty();
       }
 
-      // 1) Quitar filas localmente (feedback inmediato)
-      dt.rows(function(idx, data) {
-        return nuips.includes(String((data && data[0]) || ''));
-      }).remove().draw(false);
+      const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
 
-      // 2) Salir del modo eliminación
-      exitDeleteMode(dt);
+      // Botones por rol
+      const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
+      const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
 
-      // 3) Alerta igual que Guardar (sin recargar tabla)
-      playSoundOnce(SOUNDS.success);
-      Swal.fire({
-        icon: 'success',
-        title: 'Fila o filas eliminadas',
-        html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
-        timer: 3500,
-        showConfirmButton: false,
-        customClass: { popup: 'swal2-responsive-popup' }
+      const adminExportButtons = [
+        { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+        { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+        { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+        { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+        colvisButton
+      ];
+
+      // Índices de las columnas especiales (últimas tres)
+      const idxVotacion = colsDT.length - 3;
+      const idxWhatsapp = colsDT.length - 2;
+      const idxSeleccion = colsDT.length - 1;
+
+      // Botones nativos de DataTables para Eliminar / Confirmar / Descartar
+      const btnEliminar = {
+        text: `Eliminar <span class="ms-1 align-middle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
+          </svg>
+        </span>`,
+        className: 'btn btn-outline-danger',
+        attr: { id: 'btnEliminarFilas' },
+        action: function(e, dt) {
+          playSoundOnce(SOUNDS.warning);
+          deleteMode = true;
+          selectedNuips.clear();
+          dt.column(idxSeleccion).visible(true);
+          // Oculta "Eliminar" y muestra los otros
+          $('#btnEliminarFilas').addClass('d-none');
+          $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
+          Swal.fire({
+            icon: 'warning',
+            title: 'Modo eliminación',
+            text: 'Selecciona una o varias filas para eliminar.',
+            timer: 1800,
+            showConfirmButton: false,
+            customClass: { popup: 'swal2-responsive-popup' }
+          });
+        }
+      };
+
+      const btnConfirmar = {
+        text: `Confirmar <span class="ms-1 align-middle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+          </svg>
+        </span>`,
+        className: 'btn btn-danger d-none',
+        attr: { id: 'btnConfirmarEliminacion' },
+        action: async function(e, dt) {
+          if (selectedNuips.size === 0) {
+            Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
+            return;
+          }
+
+          const nuips = Array.from(selectedNuips);
+
+          try {
+            Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
+            Swal.close();
+
+            if (!res || res.ok !== true) {
+              throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
+            }
+
+            // 1) Quitar filas localmente (feedback inmediato)
+            dt.rows(function(idx, data) {
+              return nuips.includes(String((data && data[0]) || ''));
+            }).remove().draw(false);
+
+            // 2) Salir del modo eliminación
+            exitDeleteMode(dt);
+
+            // 3) Alerta igual que Guardar (sin recargar tabla)
+            playSoundOnce(SOUNDS.success);
+            Swal.fire({
+              icon: 'success',
+              title: 'Fila o filas eliminadas',
+              html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
+              timer: 3500,
+              showConfirmButton: false,
+              customClass: { popup: 'swal2-responsive-popup' }
+            });
+          } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
+          }
+        }
+      };
+
+      const btnDescartar = {
+        text: `Descartar <span class="ms-1 align-middle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+          </svg>
+        </span>`,
+        className: 'btn btn-secondary d-none',
+        attr: { id: 'btnDescartarEliminacion' },
+        action: function(e, dt) {
+          playSoundOnce(SOUNDS.back);
+          exitDeleteMode(dt);
+        }
+      };
+
+      const buttonsArr = isAdmin
+        ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
+        : [colvisButton];
+
+      // Crea la tabla
+      tabla = $('#tablaReferidos').DataTable({
+        language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
+        responsive: false,
+        dom: 'Blfrtip',
+        scrollX: true,
+        autoWidth: true,
+        pagingType: 'full_numbers',
+        lengthMenu: [5, 10, 20, 50, 100],
+        columns: colsDT,
+        data: data,
+        order: [[0, 'asc']],
+        buttons: buttonsArr,
+        columnDefs: [
+          ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
+          {
+            targets: idxVotacion,
+            orderable: false,
+            searchable: false,
+            className: 'text-center',
+            render: function(data, type, row, meta) {
+              var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+              var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+              var colorClass = (municipio === "FLANDES") ? "verde" : "";
+              return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+            }
+          },
+          {
+            targets: idxWhatsapp,
+            orderable: false,
+            searchable: false,
+            className: 'text-center',
+            render: function(data, type, row, meta) {
+              return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
+            }
+          },
+          {
+            targets: idxSeleccion,
+            orderable: false,
+            searchable: false,
+            visible: false, // oculto por defecto
+            className: 'text-center',
+            render: function(data, type, row, meta) {
+              const nuip = (row && row[0] != null) ? String(row[0]) : '';
+              const checked = selectedNuips.has(nuip) ? 'checked' : '';
+              return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
+            }
+          }
+        ]
       });
-    } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
-    }
-  }
-};
 
-  const btnDescartar = {
-    text: `Descartar <span class="ms-1 align-middle">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
-      </svg>
-    </span>`,
-    className: 'btn btn-secondary d-none',
-    attr: { id: 'btnDescartarEliminacion' },
-    action: function(e, dt) {
-      playSoundOnce(SOUNDS.back);
-      exitDeleteMode(dt);
-    }
-  };
+      tabla.off('draw');
+      tabla.on('draw', centrarEncabezadosTabla);
+      centrarEncabezadosTabla();
 
-  const buttonsArr = isAdmin
-    ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
-    : [colvisButton];
+      // Delegación para checkboxes de filas
+      $('#tablaReferidos tbody').off('change', 'input.row-select');
+      $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
+        const nuip = String(this.dataset.nuip || '');
+        if (!nuip) return;
+        if (this.checked) selectedNuips.add(nuip);
+        else selectedNuips.delete(nuip);
+      });
 
-  // Crea la tabla
-  tabla = $('#tablaReferidos').DataTable({
-    language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
-    responsive: false,
-    dom: 'Blfrtip',
-    scrollX: true,
-    autoWidth: true,
-    pagingType: 'full_numbers',
-    lengthMenu: [5, 10, 20, 50, 100],
-    columns: colsDT,
-    data: data,
-    order: [[0, 'asc']],
-    buttons: buttonsArr,
-    columnDefs: [
-      ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
-      {
-        targets: idxVotacion,
-        orderable: false,
-        searchable: false,
-        className: 'text-center',
-        render: function(data, type, row, meta) {
-          var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-          var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
-          var colorClass = (municipio === "FLANDES") ? "verde" : "";
-          return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-        }
-      },
-      {
-        targets: idxWhatsapp,
-        orderable: false,
-        searchable: false,
-        className: 'text-center',
-        render: function(data, type, row, meta) {
-          return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
-        }
-      },
-      {
-        targets: idxSeleccion,
-        orderable: false,
-        searchable: false,
-        visible: false, // oculto por defecto
-        className: 'text-center',
-        render: function(data, type, row, meta) {
-          const nuip = (row && row[0] != null) ? String(row[0]) : '';
-          const checked = selectedNuips.has(nuip) ? 'checked' : '';
-          return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
-        }
+      // Helper para salir del modo eliminación (UI + estado)
+      function exitDeleteMode(dt) {
+        deleteMode = false;
+        selectedNuips.clear();
+        dt.column(idxSeleccion).visible(false);
+        $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
+        $('#btnEliminarFilas').removeClass('d-none');
       }
-    ]
-  });
-
-  tabla.off('draw');
-  tabla.on('draw', centrarEncabezadosTabla);
-  centrarEncabezadosTabla();
-
-  // Delegación para checkboxes de filas
-  $('#tablaReferidos tbody').off('change', 'input.row-select');
-  $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
-    const nuip = String(this.dataset.nuip || '');
-    if (!nuip) return;
-    if (this.checked) selectedNuips.add(nuip);
-    else selectedNuips.delete(nuip);
-  });
-
-  // Helper para salir del modo eliminación (UI + estado)
-  function exitDeleteMode(dt) {
-    deleteMode = false;
-    selectedNuips.clear();
-    dt.column(idxSeleccion).visible(false);
-    $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
-    $('#btnEliminarFilas').removeClass('d-none');
-  }
-}
+      // Exponer para los botones
+      window.exitDeleteMode = exitDeleteMode;
+    }
 
     // ----- ACCIÓN VOTACIÓN -----
     let filaVotacion = null;
     function abrirModalVotacion(idxFila) {
       filaVotacion = idxFila;
 
+      // Copia NUIP (col 0) al portapapeles si existe
       try {
-        const row = tabla.row(idxFila).data();
-        if (row && row[0]) {
-          if (navigator.clipboard) { navigator.clipboard.writeText(row[0].toString()); }
+        const row0 = tabla.row(idxFila).data();
+        if (row0 && row0[0] && navigator.clipboard) {
+          navigator.clipboard.writeText(String(row0[0])).catch(()=>{});
         }
       } catch(e){}
 
+      // Limpia campos del modal
       document.getElementById('datos_row').value = "";
       document.getElementById('nuip').value = "";
       document.getElementById('departamento').value = "";
@@ -802,19 +810,59 @@
       document.getElementById('mesa').value = "";
 
       const row = tabla.row(idxFila).data();
-      const idxG = encabezados.indexOf("G");
-      const idxH = encabezados.indexOf("H");
-      const idxI = encabezados.indexOf("I");
-      const idxJ = encabezados.indexOf("J");
-      const idxK = encabezados.indexOf("K");
-      const idxL = encabezados.indexOf("L");
-      if (row[idxG] || row[idxH] || row[idxI] || row[idxJ] || row[idxK] || row[idxL]) {
-        document.getElementById('nuip').value = row[idxG] || "";
-        document.getElementById('departamento').value = row[idxH] || "";
-        document.getElementById('municipio').value = row[idxI] || "";
-        document.getElementById('puesto').value = row[idxJ] || "";
-        document.getElementById('direccion').value = row[idxK] || "";
-        document.getElementById('mesa').value = row[idxL] || "";
+
+      // Helpers para resolver índices por encabezado (con alternativas y fallback a letras)
+      const idxByHeader = (...cands) => {
+        for (const c of cands) {
+          if (!c) continue;
+          const i = encabezados.indexOf(c);
+          if (i > -1) return i;
+        }
+        return -1;
+      };
+      const firstValid = (...idxs) => {
+        for (const i of idxs) if (i > -1) return i;
+        return -1;
+      };
+
+      // Preferido por nombre
+      const iDeptoByName = idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO');
+      const iMunByName   = idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO');
+      const iPueByName   = idxByHeader('PUESTO','PUESTO DE VOTACIÓN');
+      const iDirByName   = idxByHeader('DIRECCION','DIRECCIÓN');
+      const iMesaByName  = idxByHeader('MESA');
+
+      // Fallback por letras (tu GS guarda en G..L)
+      const iG = idxByHeader('G'); // NUIP no se usa aquí
+      const iH = idxByHeader('H'); // DEPARTAMENTO
+      const iI = idxByHeader('I'); // MUNICIPIO
+      const iJ = idxByHeader('J'); // PUESTO
+      const iK = idxByHeader('K'); // DIRECCION
+      const iL = idxByHeader('L'); // MESA
+
+      const iDepto = firstValid(iDeptoByName, iH);
+      const iMun   = firstValid(iMunByName,   iI);
+      const iPue   = firstValid(iPueByName,   iJ);
+      const iDir   = firstValid(iDirByName,   iK);
+      const iMesa  = firstValid(iMesaByName,  iL);
+
+      // NUIP (columna 0 visual)
+      document.getElementById('nuip').value = (row && row[0] != null) ? String(row[0]) : "";
+
+      const dep = (iDepto > -1 && row[iDepto]) ? String(row[iDepto]) : '';
+      const mun = (iMun   > -1 && row[iMun])   ? String(row[iMun])   : '';
+      const pue = (iPue   > -1 && row[iPue])   ? String(row[iPue])   : '';
+      const dir = (iDir   > -1 && row[iDir])   ? String(row[iDir])   : '';
+      const mes = (iMesa  > -1 && row[iMesa])  ? String(row[iMesa])  : '';
+
+      const tienePrevios = [dep, mun, pue, dir, mes].some(v => v.trim().length > 0);
+
+      if (tienePrevios) {
+        document.getElementById('departamento').value = dep;
+        document.getElementById('municipio').value    = mun;
+        document.getElementById('puesto').value       = pue;
+        document.getElementById('direccion').value    = dir;
+        document.getElementById('mesa').value         = mes;
         document.getElementById('btnGuardarVotacion').textContent = "Actualizar";
       } else {
         document.getElementById('btnGuardarVotacion').textContent = "Guardar";
@@ -852,7 +900,7 @@
     document.getElementById('datos_row').addEventListener('input', intentarAutocompletar);
     document.getElementById('datos_row').addEventListener('blur', intentarAutocompletar);
 
-    // Guardar o actualizar datos de votación
+    // Guardar o actualizar datos de votación (actualización en sitio, preserva orden/paginación/filtros)
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
       e.preventDefault();
       const nuip = document.getElementById('nuip').value.trim();
@@ -870,18 +918,43 @@
         const res = await apiGuardarVotacion({ idxFila: filaVotacion, nuip, departamento, municipio, puesto, direccion, mesa });
         if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
-        // Actualiza local: columna MUNICIPIO (índice 7) si corresponde a tu estructura
+        // Actualiza locales por nombre con fallback a letras G..L
+        const idxByHeader = (...cands) => {
+          for (const c of cands) {
+            if (!c) continue;
+            const i = encabezados.indexOf(c);
+            if (i > -1) return i;
+          }
+          return -1;
+        };
+        const firstValid = (...idxs) => {
+          for (const i of idxs) if (i > -1) return i;
+          return -1;
+        };
+
+        const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+        const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'), idxByHeader('I'));
+        const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'), idxByHeader('J'));
+        const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'), idxByHeader('K'));
+        const iMesa  = firstValid(idxByHeader('MESA'), idxByHeader('L'));
+
         let nuevaFila = tabla.row(filaVotacion).data().slice();
-        nuevaFila[7] = municipio;
+        if (iDepto > -1) nuevaFila[iDepto] = departamento;
+        if (iMun   > -1) nuevaFila[iMun]   = municipio;
+        if (iPue   > -1) nuevaFila[iPue]   = puesto;
+        if (iDir   > -1) nuevaFila[iDir]   = direccion;
+        if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+
         tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
 
-        setTimeout(function() {
-          const tr = tabla.row(filaVotacion).node();
-          if(tr && tr.children[7]) {
-            tr.children[7].classList.add('resaltado-cambio');
-            setTimeout(()=>{ tr.children[7].classList.remove('resaltado-cambio'); }, 2000);
+        // Resaltar cambios
+        const tr = tabla.row(filaVotacion).node();
+        [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
+          if (i > -1 && tr && tr.children[i]) {
+            tr.children[i].classList.add('resaltado-cambio');
+            setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
           }
-        }, 200);
+        });
 
         bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
         Swal.fire({
@@ -926,36 +999,34 @@
     document.getElementById('btn-cerrar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.logout));
 
     // Ver/Ocultar contenido del campo #documento y alternar ícono
-(function(){
-  const input = document.getElementById('documento');
-  const btn = document.getElementById('toggleDocumento');
+    (function(){
+      const input = document.getElementById('documento');
+      const btn = document.getElementById('toggleDocumento');
 
-  const ICON_EYE_SLASH = `
+      const ICON_EYE_SLASH = `
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
   <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
   <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
 </svg>`;
-  const ICON_EYE = `
+      const ICON_EYE = `
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
   <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
   <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
 </svg>`;
 
-  if (input && btn){
-    btn.addEventListener('click', function(){
-      const willShow = input.type === 'password';
-      input.type = willShow ? 'text' : 'password';
-      btn.setAttribute('aria-pressed', String(willShow));
-      btn.innerHTML = willShow ? ICON_EYE : ICON_EYE_SLASH;
-      try {
-        input.focus();
-        input.setSelectionRange(input.value.length, input.value.length);
-      } catch(e){}
-    });
-  }
-})();
+      if (input && btn){
+        btn.addEventListener('click', function(){
+          const willShow = input.type === 'password';
+          input.type = willShow ? 'text' : 'password';
+          btn.setAttribute('aria-pressed', String(willShow));
+          btn.innerHTML = willShow ? ICON_EYE : ICON_EYE_SLASH;
+          try {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          } catch(e){}
+        });
+      }
+    })();
   </script>
-
-  
 </body>
 </html>
