@@ -88,6 +88,7 @@
     .swal2-popup.swal2-responsive-popup { width: 350px !important; max-width: 95vw; font-size: 15px !important; }
     .icon-btn-header { background: transparent; border: none; cursor: pointer; font-size: 1.5em; vertical-align: middle; color: #1976d2; }
     .icon-btn-header:hover { color: #28a745; }
+    .btn-votacion.azul { background-color: #007BFF !important; }
 
     #tituloLider { color: #007bff !important; font-weight: bold; font-size: 1.6em; text-align: left; margin: 20px 0 5px 0; letter-spacing: 1px; text-shadow: none !important; }
 
@@ -765,18 +766,19 @@
         buttons: buttonsArr,
         columnDefs: [
           ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
-          {
-            targets: idxVotacion,
-            orderable: false,
-            searchable: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-              var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
-              var colorClass = (municipio === "FLANDES") ? "verde" : "";
-              return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-            }
-          },
+         {
+  targets: idxVotacion,
+  orderable: false,
+  searchable: false,
+  className: 'text-center',
+  render: function(data, type, row, meta) {
+    var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+    var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+    // Azul si es SIN CONSULTAR, verde si es FLANDES
+    var colorClass = municipio === "SIN CONSULTAR" ? "azul" : (municipio === "FLANDES" ? "verde" : "");
+    return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+  }
+},
           {
             targets: idxWhatsapp,
             orderable: false,
