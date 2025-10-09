@@ -934,17 +934,6 @@
   // Exponer para los botones
   window.exitDeleteMode = exitDeleteMode;
 }
-      // Helper para salir del modo eliminación (UI + estado)
-      function exitDeleteMode(dt) {
-        deleteMode = false;
-        selectedNuips.clear();
-        dt.column(idxSeleccion).visible(false);
-        $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
-        $('#btnEliminarFilas').removeClass('d-none');
-      }
-      // Exponer para los botones
-      window.exitDeleteMode = exitDeleteMode;
-    }
 
     // ----- ACCIÓN VOTACIÓN -----
     let filaVotacion = null;
