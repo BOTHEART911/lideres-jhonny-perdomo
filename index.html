@@ -89,6 +89,9 @@
     .icon-btn-header { background: transparent; border: none; cursor: pointer; font-size: 1.5em; vertical-align: middle; color: #1976d2; }
     .icon-btn-header:hover { color: #28a745; }
     .btn-votacion.azul { background-color: #007BFF !important; }
+   /* Colores de estado para el botón "Votación" */
+.btn-votacion.gris { background-color: #6c757d !important; color: #fff !important; }     /* A LA ESPERA */
+.btn-votacion.naranja { background-color: #f39c12 !important; color: #fff !important; }  /* POR CONFIRMAR */
 
     #tituloLider { color: #007bff !important; font-weight: bold; font-size: 1.6em; text-align: left; margin: 20px 0 5px 0; letter-spacing: 1px; text-shadow: none !important; }
 
@@ -332,38 +335,113 @@
   </main>
 
   <!-- Modal Votación -->
-  <div class="modal fade" id="modalVotacion" tabindex="-1" aria-labelledby="modalVotacionLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <form id="formVotacion">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalVotacionLabel">Votación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+<div class="modal fade" id="modalVotacion" tabindex="-1" aria-labelledby="modalVotacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form id="formVotacion">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalVotacionLabel">Votación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <button type="button" class="boton-efecto" onclick="window.open('https://wsp.registraduria.gov.co/censo/consultar/', '_blank')">Ir a Consultar</button>
           </div>
-          <div class="modal-body">
-            <div>
-              <button type="button" class="boton-efecto" onclick="window.open('https://wsp.registraduria.gov.co/censo/consultar/', '_blank')">Ir a Consultar</button>
-            </div>
-            <label for="datos_row">Pega aquí los datos de la Registraduría:</label>
-            <textarea class="form-control" id="datos_row" rows="4" placeholder="Pega aquí la info..." style="margin-bottom:10px;" required></textarea>
-            <div class="row g-2">
-              <div class="col-md-4"><input id="nuip" class="form-control" type="text" placeholder="NUIP" readonly></div>
-              <div class="col-md-4"><input id="departamento" class="form-control" type="text" placeholder="DEPARTAMENTO" readonly></div>
-              <div class="col-md-4"><input id="municipio" class="form-control" type="text" placeholder="MUNICIPIO" readonly></div>
-            </div>
-            <div class="row g-2 mt-2">
-              <div class="col-md-4"><input id="puesto" class="form-control" type="text" placeholder="PUESTO" readonly></div>
-              <div class="col-md-4"><input id="direccion" class="form-control" type="text" placeholder="DIRECCIÓN" readonly></div>
-              <div class="col-md-4"><input id="mesa" class="form-control" type="text" placeholder="MESA" readonly></div>
-            </div>
+          <label for="datos_row">Pega aquí los datos de la Registraduría:</label>
+          <textarea class="form-control" id="datos_row" rows="4" placeholder="Pega aquí la info..." style="margin-bottom:10px;" required></textarea>
+
+          <div class="row g-2">
+            <div class="col-md-4"><input id="nuip" class="form-control" type="text" placeholder="NUIP" readonly></div>
+            <div class="col-md-4"><input id="departamento" class="form-control" type="text" placeholder="DEPARTAMENTO" readonly></div>
+            <div class="col-md-4"><input id="municipio" class="form-control" type="text" placeholder="MUNICIPIO" readonly></div>
           </div>
-          <div class="modal-footer">
-            <button id="btnGuardarVotacion" type="submit" class="boton-efecto">Guardar</button>
+
+          <div class="row g-2 mt-2">
+            <div class="col-md-4"><input id="puesto" class="form-control" type="text" placeholder="PUESTO" readonly></div>
+            <div class="col-md-4"><input id="direccion" class="form-control" type="text" placeholder="DIRECCIÓN" readonly></div>
+            <div class="col-md-4"><input id="mesa" class="form-control" type="text" placeholder="MESA" readonly></div>
+          </div>
+
+          <!-- NUEVO: Checks opcionales para fijar solo MUNICIPIO -->
+          <div class="mt-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chkALaEspera"
+                     onchange="onEstadoCheckboxChange(this, 'A LA ESPERA')">
+              <label class="form-check-label" for="chkALaEspera">
+                Marcar solo el MUNICIPIO como "A LA ESPERA" (gris)
+              </label>
+            </div>
+            <div class="form-check mt-1">
+              <input class="form-check-input" type="checkbox" id="chkPorConfirmar"
+                     onchange="onEstadoCheckboxChange(this, 'POR CONFIRMAR')">
+              <label class="form-check-label" for="chkPorConfirmar">
+                Marcar solo el MUNICIPIO como "POR CONFIRMAR" (naranja)
+              </label>
+            </div>
           </div>
         </div>
-      </form>
-    </div>
+
+        <div class="modal-footer">
+          <button id="btnGuardarVotacion" type="submit" class="boton-efecto">Guardar</button>
+        </div>
+      </div>
+    </form>
   </div>
+</div>
+
+<script>
+  // Maneja checks excluyentes y setea/restituye el valor del campo MUNICIPIO
+  function onEstadoCheckboxChange(chk, estado){
+    const inputMun = document.getElementById('municipio');
+    if (!inputMun) return;
+
+    const chkA = document.getElementById('chkALaEspera');
+    const chkP = document.getElementById('chkPorConfirmar');
+    const other = (estado === 'A LA ESPERA') ? chkP : chkA;
+
+    if (chk.checked){
+      // Excluir al otro
+      if (other && other.checked) other.checked = false;
+
+      // Guardar valor previo una sola vez
+      if (inputMun.dataset.prevValue === undefined){
+        inputMun.dataset.prevValue = inputMun.value || '';
+      }
+
+      // Fijar estado
+      inputMun.value = estado;
+    } else {
+      // Si ninguno queda seleccionado, restaurar el valor previo
+      const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
+      if (!algunoActivo){
+        if (inputMun.dataset.prevValue !== undefined){
+          inputMun.value = inputMun.dataset.prevValue;
+          delete inputMun.dataset.prevValue;
+        }
+      } else {
+        // Si el otro quedó activo, asegura el valor correcto
+        inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
+      }
+    }
+  }
+
+  // Al mostrar el modal, resetear checks y estado previo
+  (function(){
+    const modalEl = document.getElementById('modalVotacion');
+    if (!modalEl) return;
+    modalEl.addEventListener('show.bs.modal', function(){
+      const chkA = document.getElementById('chkALaEspera');
+      const chkP = document.getElementById('chkPorConfirmar');
+      if (chkA) chkA.checked = false;
+      if (chkP) chkP.checked = false;
+
+      const inputMun = document.getElementById('municipio');
+      if (inputMun && inputMun.dataset.prevValue !== undefined){
+        delete inputMun.dataset.prevValue;
+      }
+    });
+  })();
+</script>
 
   <!-- Modal WhatsApp -->
   <div class="modal fade" id="modalWhatsapp" tabindex="-1" aria-labelledby="modalWhatsappLabel" aria-hidden="true">
@@ -766,16 +844,30 @@
         buttons: buttonsArr,
         columnDefs: [
           ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
-         {
+        {
   targets: idxVotacion,
   orderable: false,
   searchable: false,
   className: 'text-center',
   render: function(data, type, row, meta) {
     var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-    var municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
-    // Azul si es SIN CONSULTAR, verde si es FLANDES
-    var colorClass = municipio === "SIN CONSULTAR" ? "azul" : (municipio === "FLANDES" ? "verde" : "");
+    var municipio = "";
+    if (idxMunicipio > -1) {
+      municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+    }
+
+    // Colores según estado del MUNICIPIO:
+    // - "A LA ESPERA"   => gris
+    // - "POR CONFIRMAR" => naranja
+    // - "SIN CONSULTAR" => azul
+    // - "FLANDES"       => verde
+    // - Otros           => rojo (por defecto .btn-votacion)
+    var colorClass =
+      municipio === "A LA ESPERA"   ? "gris"    :
+      municipio === "POR CONFIRMAR" ? "naranja" :
+      municipio === "SIN CONSULTAR" ? "azul"    :
+      municipio === "FLANDES"       ? "verde"   : "";
+
     return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
   }
 },
