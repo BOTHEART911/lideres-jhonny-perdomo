@@ -392,55 +392,55 @@
 <script>
   // Maneja checks excluyentes y setea/restituye el valor del campo MUNICIPIO
   function onEstadoCheckboxChange(chk, estado){
-    const inputMun = document.getElementById('municipio');
-    if (!inputMun) return;
+  const inputMun = document.getElementById('municipio');
+  if (!inputMun) return;
 
-    const chkA = document.getElementById('chkALaEspera');
-    const chkP = document.getElementById('chkPorConfirmar');
-    const other = (estado === 'A LA ESPERA') ? chkP : chkA;
+  const chkA = document.getElementById('chkALaEspera');
+  const chkP = document.getElementById('chkPorConfirmar');
+  const other = (estado === 'A LA ESPERA') ? chkP : chkA;
 
-    if (chk.checked){
-      // Excluir al otro
-      if (other && other.checked) other.checked = false;
+  if (chk.checked){
+    if (other && other.checked) other.checked = false;
 
-      // Guardar valor previo una sola vez
-      if (inputMun.dataset.prevValue === undefined){
-        inputMun.dataset.prevValue = inputMun.value || '';
+    if (inputMun.dataset.prevValue === undefined){
+      inputMun.dataset.prevValue = inputMun.value || '';
+    }
+    inputMun.value = estado;
+  } else {
+    const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
+    if (!algunoActivo){
+      if (inputMun.dataset.prevValue !== undefined){
+        inputMun.value = inputMun.dataset.prevValue;
+        delete inputMun.dataset.prevValue;
       }
-
-      // Fijar estado
-      inputMun.value = estado;
     } else {
-      // Si ninguno queda seleccionado, restaurar el valor previo
-      const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
-      if (!algunoActivo){
-        if (inputMun.dataset.prevValue !== undefined){
-          inputMun.value = inputMun.dataset.prevValue;
-          delete inputMun.dataset.prevValue;
-        }
-      } else {
-        // Si el otro quedó activo, asegura el valor correcto
-        inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
-      }
+      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
     }
   }
+
+  // NUEVO: marcar textarea como opcional si hay algún check activo
+  updateDatosRowRequirement();
+}
 
   // Al mostrar el modal, resetear checks y estado previo
   (function(){
     const modalEl = document.getElementById('modalVotacion');
-    if (!modalEl) return;
-    modalEl.addEventListener('show.bs.modal', function(){
-      const chkA = document.getElementById('chkALaEspera');
-      const chkP = document.getElementById('chkPorConfirmar');
-      if (chkA) chkA.checked = false;
-      if (chkP) chkP.checked = false;
+  if (!modalEl) return;
+  modalEl.addEventListener('show.bs.modal', function(){
+    const chkA = document.getElementById('chkALaEspera');
+    const chkP = document.getElementById('chkPorConfirmar');
+    if (chkA) chkA.checked = false;
+    if (chkP) chkP.checked = false;
 
-      const inputMun = document.getElementById('municipio');
-      if (inputMun && inputMun.dataset.prevValue !== undefined){
-        delete inputMun.dataset.prevValue;
-      }
-    });
-  })();
+    const inputMun = document.getElementById('municipio');
+    if (inputMun && inputMun.dataset.prevValue !== undefined){
+      delete inputMun.dataset.prevValue;
+    }
+
+    // NUEVO: al abrir, si no hay check, el textarea vuelve a ser requerido
+    updateDatosRowRequirement();
+  });
+})();
 </script>
 
   <!-- Modal WhatsApp -->
@@ -1116,6 +1116,34 @@
         Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
       }
     });
+
+    function isEstadoCheckboxActive(){
+  const chkA = document.getElementById('chkALaEspera');
+  const chkP = document.getElementById('chkPorConfirmar');
+  return (chkA && chkA.checked) || (chkP && chkP.checked);
+}
+
+// Actualiza si el textarea es requerido u opcional y ajusta la etiqueta
+function updateDatosRowRequirement(){
+  const textarea = document.getElementById('datos_row');
+  if (!textarea) return;
+
+  const optional = isEstadoCheckboxActive();
+  textarea.required = !optional;
+
+  // Opcional: reflejar “(opcional)” en la etiqueta
+  const label = document.querySelector('label[for="datos_row"]');
+  if (label){
+    if (!label.dataset.origText) label.dataset.origText = label.textContent;
+    if (optional) {
+      if (!/opcional/i.test(label.textContent)) {
+        label.textContent = label.dataset.origText + ' (opcional)';
+      }
+    } else {
+      label.textContent = label.dataset.origText;
+    }
+  }
+}
 
     // ----- ACCIÓN WHATSAPP -----
     let filaWhatsapp = null;
