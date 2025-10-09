@@ -437,7 +437,8 @@
       delete inputMun.dataset.prevValue;
     }
 
-    // NUEVO: al abrir, si no hay check, el textarea vuelve a ser requerido
+    // Al abrir: modo normal (textarea requerido, campos habilitados)
+    setOnlyMunicipioModeUI(false);
     updateDatosRowRequirement();
   });
 })();
@@ -1050,88 +1051,151 @@
 
     // Guardar o actualizar datos de votación (actualización en sitio, preserva orden/paginación/filtros)
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
-      e.preventDefault();
-      const nuip = document.getElementById('nuip').value.trim();
-      const departamento = document.getElementById('departamento').value.trim();
-      const municipio = document.getElementById('municipio').value.trim();
-      const puesto = document.getElementById('puesto').value.trim();
-      const direccion = document.getElementById('direccion').value.trim();
-      const mesa = document.getElementById('mesa').value.trim();
-      if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
-        Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
-        return;
+  e.preventDefault();
+
+  const nuip = document.getElementById('nuip').value.trim();
+  let departamento = document.getElementById('departamento').value.trim();
+  let municipio    = document.getElementById('municipio').value.trim();
+  let puesto       = document.getElementById('puesto').value.trim();
+  let direccion    = document.getElementById('direccion').value.trim();
+  let mesa         = document.getElementById('mesa').value.trim();
+
+  const onlyMunicipioMode = isEstadoCheckboxActive();
+
+  if (onlyMunicipioMode){
+    // Solo exigimos NUIP + MUNICIPIO
+    if (!nuip || !municipio){
+      Swal.fire({icon:'warning',title:'Completa los campos requeridos',text:'NUIP y MUNICIPIO son obligatorios cuando marcas el estado.'});
+      return;
+    }
+
+    // Rellenar los demás campos con los valores actuales de la fila para NO cambiarlos
+    const row = tabla.row(filaVotacion).data() || [];
+
+    // Helpers locales para obtener índices por encabezado (con fallback letras G..L)
+    const idxByHeader = (...cands) => {
+      for (const c of cands) {
+        if (!c) continue;
+        const i = encabezados.indexOf(c);
+        if (i > -1) return i;
       }
+      return -1;
+    };
+    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
 
-      try {
-        const res = await apiGuardarVotacion({ idxFila: filaVotacion, nuip, departamento, municipio, puesto, direccion, mesa });
-        if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
+    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+    const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-        // Actualiza locales por nombre con fallback a letras G..L
-        const idxByHeader = (...cands) => {
-          for (const c of cands) {
-            if (!c) continue;
-            const i = encabezados.indexOf(c);
-            if (i > -1) return i;
-          }
-          return -1;
-        };
-        const firstValid = (...idxs) => {
-          for (const i of idxs) if (i > -1) return i;
-          return -1;
-        };
+    // Si algún campo (que no es municipio) quedó vacío, lo tomamos de la tabla para preservarlo
+    if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
+    if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
+    if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
+    if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
+    // municipio ya lo fijamos por el check
+  } else {
+    // Modo normal: exige todo, como antes
+    if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
+      Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
+      return;
+    }
+  }
 
-        const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-        const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'), idxByHeader('I'));
-        const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'), idxByHeader('J'));
-        const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'), idxByHeader('K'));
-        const iMesa  = firstValid(idxByHeader('MESA'), idxByHeader('L'));
+  try {
+    const res = await apiGuardarVotacion({
+      idxFila: filaVotacion,
+      nuip,
+      departamento,
+      municipio,
+      puesto,
+      direccion,
+      mesa
+    });
+    if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
-        let nuevaFila = tabla.row(filaVotacion).data().slice();
-        if (iDepto > -1) nuevaFila[iDepto] = departamento;
-        if (iMun   > -1) nuevaFila[iMun]   = municipio;
-        if (iPue   > -1) nuevaFila[iPue]   = puesto;
-        if (iDir   > -1) nuevaFila[iDir]   = direccion;
-        if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+    // Actualiza locales por nombre con fallback a letras G..L
+    const idxByHeader = (...cands) => {
+      for (const c of cands) {
+        if (!c) continue;
+        const i = encabezados.indexOf(c);
+        if (i > -1) return i;
+      }
+      return -1;
+    };
+    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
 
-        tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+    const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-        // Resaltar cambios
-        const tr = tabla.row(filaVotacion).node();
-        [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
-          if (i > -1 && tr && tr.children[i]) {
-            tr.children[i].classList.add('resaltado-cambio');
-            setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
-          }
-        });
+    let nuevaFila = tabla.row(filaVotacion).data().slice();
+    if (iDepto > -1) nuevaFila[iDepto] = departamento;
+    if (iMun   > -1) nuevaFila[iMun]   = municipio;
+    if (iPue   > -1) nuevaFila[iPue]   = puesto;
+    if (iDir   > -1) nuevaFila[iDir]   = direccion;
+    if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
 
-        bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
-        Swal.fire({
-          icon: 'success',
-          title: '¡Datos actualizados!',
-          html: "Los datos se guardaron correctamente.<br>Recuerda: algunas columnas pueden estar ocultas.<br>Si deseas verlas, usa el botón <b>Filtrar Columnas</b> en la tabla.",
-          timer: 3500,
-          showConfirmButton: false
-        });
-      } catch (err) {
-        Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
+    tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+
+    // Resaltar cambios (especialmente MUNICIPIO en modo check)
+    const tr = tabla.row(filaVotacion).node();
+    [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
+      if (i > -1 && tr && tr.children[i]) {
+        tr.children[i].classList.add('resaltado-cambio');
+        setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
       }
     });
 
-    function isEstadoCheckboxActive(){
+    bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
+    Swal.fire({
+      icon: 'success',
+      title: '¡Datos actualizados!',
+      html: (onlyMunicipioMode
+        ? 'Se actualizó únicamente el <b>MUNICIPIO</b>.'
+        : 'Los datos se guardaron correctamente.'
+      ) + '<br>Recuerda: algunas columnas pueden estar ocultas.<br>Usa <b>Filtrar Columnas</b> si necesitas verlas.',
+      timer: 3500,
+      showConfirmButton: false
+    });
+  } catch (err) {
+    Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
+  }
+});
+   function isEstadoCheckboxActive(){
   const chkA = document.getElementById('chkALaEspera');
   const chkP = document.getElementById('chkPorConfirmar');
   return (chkA && chkA.checked) || (chkP && chkP.checked);
 }
 
-// Actualiza si el textarea es requerido u opcional y ajusta la etiqueta
+// Habilita/deshabilita campos cuando se marca un check: solo MUNICIPIO queda operativo (se llena por el check)
+function setOnlyMunicipioModeUI(on){
+  const ta = document.getElementById('datos_row');
+  if (ta){
+    ta.required = !on;
+    ta.readOnly = on;
+    ta.disabled = on;
+  }
+  // Bloquear todos menos MUNICIPIO
+  ['departamento','puesto','direccion','mesa'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.disabled = on;
+  });
+  // MUNICIPIO: no lo habilitamos para escritura; lo fijan los checks. Lo mantenemos habilitado (sin disabled) pero puede seguir readonly.
+  const mun = document.getElementById('municipio');
+  if (mun){ mun.disabled = false; }
+}
+
+// Ajusta solo la etiqueta "(opcional)" del textarea
 function updateDatosRowRequirement(){
   const textarea = document.getElementById('datos_row');
   if (!textarea) return;
-
   const optional = isEstadoCheckboxActive();
   textarea.required = !optional;
 
-  // Opcional: reflejar “(opcional)” en la etiqueta
   const label = document.querySelector('label[for="datos_row"]');
   if (label){
     if (!label.dataset.origText) label.dataset.origText = label.textContent;
@@ -1143,6 +1207,38 @@ function updateDatosRowRequirement(){
       label.textContent = label.dataset.origText;
     }
   }
+}
+
+function onEstadoCheckboxChange(chk, estado){
+  const inputMun = document.getElementById('municipio');
+  if (!inputMun) return;
+
+  const chkA = document.getElementById('chkALaEspera');
+  const chkP = document.getElementById('chkPorConfirmar');
+  const other = (estado === 'A LA ESPERA') ? chkP : chkA;
+
+  if (chk.checked){
+    if (other && other.checked) other.checked = false;
+
+    if (inputMun.dataset.prevValue === undefined){
+      inputMun.dataset.prevValue = inputMun.value || '';
+    }
+    inputMun.value = estado;
+  } else {
+    const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
+    if (!algunoActivo){
+      if (inputMun.dataset.prevValue !== undefined){
+        inputMun.value = inputMun.dataset.prevValue;
+        delete inputMun.dataset.prevValue;
+      }
+    } else {
+      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
+    }
+  }
+
+  // UI y requeridos
+  updateDatosRowRequirement();
+  setOnlyMunicipioModeUI(isEstadoCheckboxActive());
 }
 
     // ----- ACCIÓN WHATSAPP -----
