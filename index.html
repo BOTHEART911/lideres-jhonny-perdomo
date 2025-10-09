@@ -598,7 +598,7 @@
     let selectedNuips = new Set();
 
     // Columnas a ocultar por defecto (índices de encabezados)
-    const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA"];
+    const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA", "ESTADO"];
 
     async function validarDocumento(soloTabla) {
       let documento = "";
@@ -699,40 +699,51 @@
     }
 
     function inicializarTabla() {
-      let colsDT = encabezados.map(header => ({ title: header }));
-      colsDT.push({ title: "Votación" });
-      colsDT.push({ title: "WhatsApp" });
-      colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
+  let colsDT = encabezados.map(header => ({ title: header }));
+  colsDT.push({ title: "Votación" });
+  colsDT.push({ title: "WhatsApp" });
+  colsDT.push({ title: "Seleccionar" });
 
-      $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
-      $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+  $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+  $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
-      // Ajusta data al nuevo número de columnas (3 extras)
-      let data = filasFiltradas.map(row => [...row, "", "", ""]);
+  let data = filasFiltradas.map(row => [...row, "", "", ""]);
 
-      if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-        $('#tablaReferidos').DataTable().destroy();
-        $('#tablaReferidos').empty();
-      }
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+    $('#tablaReferidos').DataTable().destroy();
+    $('#tablaReferidos').empty();
+  }
 
-      const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
+  // OCULTAR columnas por nombre (case-insensitive) y asegurar ocultar la columna O (índice 14) por fallback
+  const ocultarIdxsSet = new Set();
 
-      // Botones por rol
-      const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
-      const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
+  // Por nombres de columnas conocidos
+  columnasOcultas.forEach(col => {
+    const idx = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === String(col || '').trim().toUpperCase());
+    if (idx > -1) ocultarIdxsSet.add(idx);
+  });
 
-      const adminExportButtons = [
-        { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-        { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-        { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-        { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-        colvisButton
-      ];
+  // Asegurar ocultar ESTADO por nombre o por posición (columna O = índice 14)
+  let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
+  if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Fallback a la columna O
+  if (idxEstado > -1) ocultarIdxsSet.add(idxEstado);
 
-      // Índices de las columnas especiales (últimas tres)
-      const idxVotacion = colsDT.length - 3;
-      const idxWhatsapp = colsDT.length - 2;
-      const idxSeleccion = colsDT.length - 1;
+  const ocultarIdxs = Array.from(ocultarIdxsSet);
+
+  const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
+  const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
+
+  const adminExportButtons = [
+    { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+    colvisButton
+  ];
+
+  const idxVotacion = colsDT.length - 3;
+  const idxWhatsapp = colsDT.length - 2;
+  const idxSeleccion = colsDT.length - 1;
 
       // Botones nativos de DataTables para Eliminar / Confirmar / Descartar
       const btnEliminar = {
