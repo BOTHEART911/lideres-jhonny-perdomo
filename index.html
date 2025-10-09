@@ -699,37 +699,38 @@
     }
 
     function inicializarTabla() {
+  // 0) Determinar índice de la columna ESTADO (por nombre o fallback a O=14)
+  let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
+  if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
+
+  // 1) Definir columnas de la tabla (manteniendo tus 3 extras)
   let colsDT = encabezados.map(header => ({ title: header }));
   colsDT.push({ title: "Votación" });
   colsDT.push({ title: "WhatsApp" });
-  colsDT.push({ title: "Seleccionar" });
+  colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
 
+  // Encabezados y pie
   $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
   $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
-  let data = filasFiltradas.map(row => [...row, "", "", ""]);
+  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
+  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
+  const filasSoloActivas = Array.isArray(filasFiltradas)
+    ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
+    : [];
+  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
 
+  // 3) Reset de DataTable si ya existe
   if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
     $('#tablaReferidos').DataTable().destroy();
     $('#tablaReferidos').empty();
   }
 
-  // OCULTAR columnas por nombre (case-insensitive) y asegurar ocultar la columna O (índice 14) por fallback
-  const ocultarIdxsSet = new Set();
+  // 4) Ocultar columnas por nombre (tu lista) y asegurar ocultar ESTADO
+  const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
+  if (idxEstado > -1 && !ocultarIdxs.includes(idxEstado)) ocultarIdxs.push(idxEstado); // asegura ocultar O/ESTADO
 
-  // Por nombres de columnas conocidos
-  columnasOcultas.forEach(col => {
-    const idx = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === String(col || '').trim().toUpperCase());
-    if (idx > -1) ocultarIdxsSet.add(idx);
-  });
-
-  // Asegurar ocultar ESTADO por nombre o por posición (columna O = índice 14)
-  let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
-  if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Fallback a la columna O
-  if (idxEstado > -1) ocultarIdxsSet.add(idxEstado);
-
-  const ocultarIdxs = Array.from(ocultarIdxsSet);
-
+  // 5) Botones por rol (sin cambios)
   const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
   const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
 
@@ -741,184 +742,198 @@
     colvisButton
   ];
 
+  // 6) Índices de las columnas especiales (últimas tres)
   const idxVotacion = colsDT.length - 3;
   const idxWhatsapp = colsDT.length - 2;
   const idxSeleccion = colsDT.length - 1;
 
-      // Botones nativos de DataTables para Eliminar / Confirmar / Descartar
-      const btnEliminar = {
-        text: `Eliminar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-outline-danger',
-        attr: { id: 'btnEliminarFilas' },
-        action: function(e, dt) {
-          playSoundOnce(SOUNDS.warning);
-          deleteMode = true;
-          selectedNuips.clear();
-          dt.column(idxSeleccion).visible(true);
-          // Oculta "Eliminar" y muestra los otros
-          $('#btnEliminarFilas').addClass('d-none');
-          $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
-          Swal.fire({
-            icon: 'warning',
-            title: 'Modo eliminación',
-            text: 'Selecciona una o varias filas para eliminar.',
-            timer: 1800,
-            showConfirmButton: false,
-            customClass: { popup: 'swal2-responsive-popup' }
-          });
-        }
-      };
-
-      const btnConfirmar = {
-        text: `Confirmar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-danger d-none',
-        attr: { id: 'btnConfirmarEliminacion' },
-        action: async function(e, dt) {
-          if (selectedNuips.size === 0) {
-            Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
-            return;
-          }
-
-          const nuips = Array.from(selectedNuips);
-
-          try {
-            Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
-            Swal.close();
-
-            if (!res || res.ok !== true) {
-              throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
-            }
-
-            // 1) Quitar filas localmente (feedback inmediato)
-            dt.rows(function(idx, data) {
-              return nuips.includes(String((data && data[0]) || ''));
-            }).remove().draw(false);
-
-            // 2) Salir del modo eliminación
-            exitDeleteMode(dt);
-
-            // 3) Alerta igual que Guardar (sin recargar tabla)
-            playSoundOnce(SOUNDS.success);
-            Swal.fire({
-              icon: 'success',
-              title: 'Fila o filas eliminadas',
-              html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
-              timer: 3500,
-              showConfirmButton: false,
-              customClass: { popup: 'swal2-responsive-popup' }
-            });
-          } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
-          }
-        }
-      };
-
-      const btnDescartar = {
-        text: `Descartar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-secondary d-none',
-        attr: { id: 'btnDescartarEliminacion' },
-        action: function(e, dt) {
-          playSoundOnce(SOUNDS.back);
-          exitDeleteMode(dt);
-        }
-      };
-
-      const buttonsArr = isAdmin
-        ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
-        : [colvisButton];
-
-      // Crea la tabla
-      tabla = $('#tablaReferidos').DataTable({
-        language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
-        responsive: false,
-        dom: 'Blfrtip',
-        scrollX: true,
-        autoWidth: true,
-        pagingType: 'full_numbers',
-        lengthMenu: [5, 10, 20, 50, 100],
-        columns: colsDT,
-        data: data,
-        order: [[0, 'asc']],
-        buttons: buttonsArr,
-        columnDefs: [
-          ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
-        {
-  targets: idxVotacion,
-  orderable: false,
-  searchable: false,
-  className: 'text-center',
-  render: function(data, type, row, meta) {
-    var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-    var municipio = "";
-    if (idxMunicipio > -1) {
-      municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+  // 7) Botones nativos de DataTables para Eliminar / Confirmar / Descartar (igual a tu código)
+  const btnEliminar = {
+    text: `Eliminar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-outline-danger',
+    attr: { id: 'btnEliminarFilas' },
+    action: function(e, dt) {
+      playSoundOnce(SOUNDS.warning);
+      deleteMode = true;
+      selectedNuips.clear();
+      dt.column(idxSeleccion).visible(true);
+      // Oculta "Eliminar" y muestra los otros
+      $('#btnEliminarFilas').addClass('d-none');
+      $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Modo eliminación',
+        text: 'Selecciona una o varias filas para eliminar.',
+        timer: 1800,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-responsive-popup' }
+      });
     }
+  };
 
-    // Colores según estado del MUNICIPIO:
-    // - "A LA ESPERA"   => gris
-    // - "POR CONFIRMAR" => naranja
-    // - "SIN CONSULTAR" => azul
-    // - "FLANDES"       => verde
-    // - Otros           => rojo (por defecto .btn-votacion)
-    var colorClass =
-      municipio === "A LA ESPERA"   ? "gris"    :
-      municipio === "POR CONFIRMAR" ? "naranja" :
-      municipio === "SIN CONSULTAR" ? "azul"    :
-      municipio === "FLANDES"       ? "verde"   : "";
+  const btnConfirmar = {
+    text: `Confirmar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-danger d-none',
+    attr: { id: 'btnConfirmarEliminacion' },
+    action: async function(e, dt) {
+      if (selectedNuips.size === 0) {
+        Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
+        return;
+      }
 
-    return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-  }
-},
-          {
-            targets: idxWhatsapp,
-            orderable: false,
-            searchable: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
-            }
-          },
-          {
-            targets: idxSeleccion,
-            orderable: false,
-            searchable: false,
-            visible: false, // oculto por defecto
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              const nuip = (row && row[0] != null) ? String(row[0]) : '';
-              const checked = selectedNuips.has(nuip) ? 'checked' : '';
-              return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
-            }
+      const nuips = Array.from(selectedNuips);
+
+      try {
+        Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
+        Swal.close();
+
+        if (!res || res.ok !== true) {
+          throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
+        }
+
+        // 1) Quitar filas localmente (feedback inmediato)
+        dt.rows(function(idx, data) {
+          return nuips.includes(String((data && data[0]) || ''));
+        }).remove().draw(false);
+
+        // 2) Salir del modo eliminación
+        exitDeleteMode(dt);
+
+        // 3) Alerta igual que Guardar (sin recargar tabla)
+        playSoundOnce(SOUNDS.success);
+        Swal.fire({
+          icon: 'success',
+          title: 'Fila o filas eliminadas',
+          html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
+          timer: 3500,
+          showConfirmButton: false,
+          customClass: { popup: 'swal2-responsive-popup' }
+        });
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
+      }
+    }
+  };
+
+  const btnDescartar = {
+    text: `Descartar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-secondary d-none',
+    attr: { id: 'btnDescartarEliminacion' },
+    action: function(e, dt) {
+      playSoundOnce(SOUNDS.back);
+      exitDeleteMode(dt);
+    }
+  };
+
+  const buttonsArr = isAdmin
+    ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
+    : [colvisButton];
+
+  // 8) Crear la DataTable (sin cambios salvo ocultar ESTADO ya contemplado)
+  tabla = $('#tablaReferidos').DataTable({
+    language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
+    responsive: false,
+    dom: 'Blfrtip',
+    scrollX: true,
+    autoWidth: true,
+    pagingType: 'full_numbers',
+    lengthMenu: [5, 10, 20, 50, 100],
+    columns: colsDT,
+    data: data,
+    order: [[0, 'asc']],
+    buttons: buttonsArr,
+    columnDefs: [
+      // Oculta las columnas calculadas por nombre + ESTADO
+      ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
+      {
+        targets: idxVotacion,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+          var municipio = "";
+          if (idxMunicipio > -1) {
+            municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
           }
-        ]
-      });
 
-      tabla.off('draw');
-      tabla.on('draw', centrarEncabezadosTabla);
-      centrarEncabezadosTabla();
+          // Colores según estado del MUNICIPIO:
+          // - "A LA ESPERA"   => gris
+          // - "POR CONFIRMAR" => naranja
+          // - "SIN CONSULTAR" => azul
+          // - "FLANDES"       => verde
+          // - Otros           => rojo (por defecto .btn-votacion)
+          var colorClass =
+            municipio === "A LA ESPERA"   ? "gris"    :
+            municipio === "POR CONFIRMAR" ? "naranja" :
+            municipio === "SIN CONSULTAR" ? "azul"    :
+            municipio === "FLANDES"       ? "verde"   : "";
 
-      // Delegación para checkboxes de filas
-      $('#tablaReferidos tbody').off('change', 'input.row-select');
-      $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
-        const nuip = String(this.dataset.nuip || '');
-        if (!nuip) return;
-        if (this.checked) selectedNuips.add(nuip);
-        else selectedNuips.delete(nuip);
-      });
+          return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+        }
+      },
+      {
+        targets: idxWhatsapp,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
+        }
+      },
+      {
+        targets: idxSeleccion,
+        orderable: false,
+        searchable: false,
+        visible: false, // oculto por defecto
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          const nuip = (row && row[0] != null) ? String(row[0]) : '';
+          const checked = selectedNuips.has(nuip) ? 'checked' : '';
+          return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
+        }
+      }
+    ]
+  });
 
+  // 9) Eventos y helpers (sin cambios)
+  tabla.off('draw');
+  tabla.on('draw', centrarEncabezadosTabla);
+  centrarEncabezadosTabla();
+
+  // Delegación para checkboxes de filas
+  $('#tablaReferidos tbody').off('change', 'input.row-select');
+  $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
+    const nuip = String(this.dataset.nuip || '');
+    if (!nuip) return;
+    if (this.checked) selectedNuips.add(nuip);
+    else selectedNuips.delete(nuip);
+  });
+
+  // Helper para salir del modo eliminación (UI + estado)
+  function exitDeleteMode(dt) {
+    deleteMode = false;
+    selectedNuips.clear();
+    dt.column(idxSeleccion).visible(false);
+    $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
+    $('#btnEliminarFilas').removeClass('d-none');
+  }
+  // Exponer para los botones
+  window.exitDeleteMode = exitDeleteMode;
+}
       // Helper para salir del modo eliminación (UI + estado)
       function exitDeleteMode(dt) {
         deleteMode = false;
