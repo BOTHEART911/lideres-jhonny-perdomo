@@ -717,9 +717,13 @@
   // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
   //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
   const filasSoloActivas = Array.isArray(filasFiltradas)
-    ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
-    : [];
-  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
+  ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
+  : [];
+
+// NUEVO: invertir el orden para que la última fila de la hoja quede primero
+filasSoloActivas.reverse();
+
+let data = filasSoloActivas.map(row => [...row, "", "", ""]);
 
   // 3) Reset de DataTable si ya existe
   if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
@@ -854,7 +858,7 @@
     lengthMenu: [5, 10, 20, 50, 100],
     columns: colsDT,
     data: data,
-    order: [[0, 'asc']],
+    order: [],
     buttons: buttonsArr,
     columnDefs: [
       // Oculta las columnas calculadas por nombre + ESTADO
