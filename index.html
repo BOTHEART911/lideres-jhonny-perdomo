@@ -470,7 +470,8 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
+  <!-- CORRECCIÓN: nombre correcto del archivo JS de Responsive -->
+  <script src="https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js"></script>
   <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.bootstrap5.min.js"></script>
@@ -481,24 +482,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-   <!-- FAIL-SAFE: evita TypeError en responsive.bootstrap5.js si Responsive aún no está listo -->
-  <script>
-    (function($){
-      try{
-        if (!$ || !$.fn || !$.fn.dataTable) return;
-        if (!$.fn.dataTable.Responsive) {
-          $.fn.dataTable.Responsive = { display: {} };
-        }
-        if (!$.fn.dataTable.Responsive.display) {
-          $.fn.dataTable.Responsive.display = {};
-        }
-        if (typeof $.fn.dataTable.Responsive.display.modal !== 'function') {
-          $.fn.dataTable.Responsive.display.modal = function(){ return function(){}; };
-        }
-      }catch(e){}
-    })(window.jQuery);
-  </script>
 
   <script>
     // 1) URL del Web App (actualiza si despliegas nueva versión)
@@ -745,15 +728,14 @@
   $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
   // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
-  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
   const filasSoloActivas = Array.isArray(filasFiltradas)
   ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
   : [];
 
-// NUEVO: invertir el orden para que la última fila de la hoja quede primero
-filasSoloActivas.reverse();
+  // NUEVO: invertir el orden para que la última fila de la hoja quede primero
+  filasSoloActivas.reverse();
 
-let data = filasSoloActivas.map(row => [...row, "", "", ""]);
+  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
 
   // 3) Reset de DataTable si ya existe
   if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
@@ -782,7 +764,7 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
   const idxWhatsapp = colsDT.length - 2;
   const idxSeleccion = colsDT.length - 1;
 
-  // 7) Botones nativos de DataTables para Eliminar / Confirmar / Descartar (igual a tu código)
+  // 7) Botones nativos de DataTables para Eliminar / Confirmar / Descartar
   const btnEliminar = {
     text: `Eliminar <span class="ms-1 align-middle">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -796,7 +778,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
       deleteMode = true;
       selectedNuips.clear();
       dt.column(idxSeleccion).visible(true);
-      // Oculta "Eliminar" y muestra los otros
       $('#btnEliminarFilas').addClass('d-none');
       $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
       Swal.fire({
@@ -835,15 +816,12 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
           throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
         }
 
-        // 1) Quitar filas localmente (feedback inmediato)
         dt.rows(function(idx, data) {
           return nuips.includes(String((data && data[0]) || ''));
         }).remove().draw(false);
 
-        // 2) Salir del modo eliminación
         exitDeleteMode(dt);
 
-        // 3) Alerta igual que Guardar (sin recargar tabla)
         playSoundOnce(SOUNDS.success);
         Swal.fire({
           icon: 'success',
@@ -877,7 +855,7 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
     : [colvisButton];
 
-  // 8) Crear la DataTable (sin cambios salvo ocultar ESTADO ya contemplado)
+  // 8) Crear la DataTable
   tabla = $('#tablaReferidos').DataTable({
     language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
     responsive: false,
@@ -891,7 +869,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     order: [],
     buttons: buttonsArr,
     columnDefs: [
-      // Oculta las columnas calculadas por nombre + ESTADO
       ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
       {
         targets: idxVotacion,
@@ -905,12 +882,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
             municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
           }
 
-          // Colores según estado del MUNICIPIO:
-          // - "A LA ESPERA"   => gris
-          // - "POR CONFIRMAR" => naranja
-          // - "SIN CONSULTAR" => azul
-          // - "FLANDES"       => verde
-          // - Otros           => rojo (por defecto .btn-votacion)
           var colorClass =
             municipio === "A LA ESPERA"   ? "gris"    :
             municipio === "POR CONFIRMAR" ? "naranja" :
@@ -933,7 +904,7 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
         targets: idxSeleccion,
         orderable: false,
         searchable: false,
-        visible: false, // oculto por defecto
+        visible: false,
         className: 'text-center',
         render: function(data, type, row, meta) {
           const nuip = (row && row[0] != null) ? String(row[0]) : '';
@@ -944,12 +915,11 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     ]
   });
 
-  // 9) Eventos y helpers (sin cambios)
+  // 9) Eventos y helpers
   tabla.off('draw');
   tabla.on('draw', centrarEncabezadosTabla);
   centrarEncabezadosTabla();
 
-  // Delegación para checkboxes de filas
   $('#tablaReferidos tbody').off('change', 'input.row-select');
   $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
     const nuip = String(this.dataset.nuip || '');
@@ -958,7 +928,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     else selectedNuips.delete(nuip);
   });
 
-  // Helper para salir del modo eliminación (UI + estado)
   function exitDeleteMode(dt) {
     deleteMode = false;
     selectedNuips.clear();
@@ -966,7 +935,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
     $('#btnEliminarFilas').removeClass('d-none');
   }
-  // Exponer para los botones
   window.exitDeleteMode = exitDeleteMode;
 }
 
@@ -975,7 +943,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     function abrirModalVotacion(idxFila) {
       filaVotacion = idxFila;
 
-      // Copia NUIP (col 0) al portapapeles si existe
       try {
         const row0 = tabla.row(idxFila).data();
         if (row0 && row0[0] && navigator.clipboard) {
@@ -983,7 +950,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
         }
       } catch(e){}
 
-      // Limpia campos del modal
       document.getElementById('datos_row').value = "";
       document.getElementById('nuip').value = "";
       document.getElementById('departamento').value = "";
@@ -994,7 +960,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
 
       const row = tabla.row(idxFila).data();
 
-      // Helpers para resolver índices por encabezado (con alternativas y fallback a letras)
       const idxByHeader = (...cands) => {
         for (const c of cands) {
           if (!c) continue;
@@ -1008,20 +973,18 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
         return -1;
       };
 
-      // Preferido por nombre
       const iDeptoByName = idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO');
       const iMunByName   = idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO');
       const iPueByName   = idxByHeader('PUESTO','PUESTO DE VOTACIÓN');
       const iDirByName   = idxByHeader('DIRECCION','DIRECCIÓN');
       const iMesaByName  = idxByHeader('MESA');
 
-      // Fallback por letras (tu GS guarda en G..L)
-      const iG = idxByHeader('G'); // NUIP no se usa aquí
-      const iH = idxByHeader('H'); // DEPARTAMENTO
-      const iI = idxByHeader('I'); // MUNICIPIO
-      const iJ = idxByHeader('J'); // PUESTO
-      const iK = idxByHeader('K'); // DIRECCION
-      const iL = idxByHeader('L'); // MESA
+      const iG = idxByHeader('G');
+      const iH = idxByHeader('H');
+      const iI = idxByHeader('I');
+      const iJ = idxByHeader('J');
+      const iK = idxByHeader('K');
+      const iL = idxByHeader('L');
 
       const iDepto = firstValid(iDeptoByName, iH);
       const iMun   = firstValid(iMunByName,   iI);
@@ -1029,7 +992,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
       const iDir   = firstValid(iDirByName,   iK);
       const iMesa  = firstValid(iMesaByName,  iL);
 
-      // NUIP (columna 0 visual)
       document.getElementById('nuip').value = (row && row[0] != null) ? String(row[0]) : "";
 
       const dep = (iDepto > -1 && row[iDepto]) ? String(row[iDepto]) : '';
@@ -1083,7 +1045,7 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     document.getElementById('datos_row').addEventListener('input', intentarAutocompletar);
     document.getElementById('datos_row').addEventListener('blur', intentarAutocompletar);
 
-    // Guardar o actualizar datos de votación (actualización en sitio, preserva orden/paginación/filtros)
+    // Guardar o actualizar datos de votación
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
   e.preventDefault();
 
@@ -1097,16 +1059,13 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
   const onlyMunicipioMode = isEstadoCheckboxActive();
 
   if (onlyMunicipioMode){
-    // Solo exigimos NUIP + MUNICIPIO
     if (!nuip || !municipio){
       Swal.fire({icon:'warning',title:'Completa los campos requeridos',text:'NUIP y MUNICIPIO son obligatorios cuando marcas el estado.'});
       return;
     }
 
-    // Rellenar los demás campos con los valores actuales de la fila para NO cambiarlos
     const row = tabla.row(filaVotacion).data() || [];
 
-    // Helpers locales para obtener índices por encabezado (con fallback letras G..L)
     const idxByHeader = (...cands) => {
       for (const c of cands) {
         if (!c) continue;
@@ -1123,14 +1082,11 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
     const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-    // Si algún campo (que no es municipio) quedó vacío, lo tomamos de la tabla para preservarlo
     if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
     if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
     if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
     if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
-    // municipio ya lo fijamos por el check
   } else {
-    // Modo normal: exige todo, como antes
     if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
       Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
       return;
@@ -1149,7 +1105,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
     });
     if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
-    // Actualiza locales por nombre con fallback a letras G..L
     const idxByHeader = (...cands) => {
       for (const c of cands) {
         if (!c) continue;
@@ -1175,7 +1130,6 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
 
     tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
 
-    // Resaltar cambios (especialmente MUNICIPIO en modo check)
     const tr = tabla.row(filaVotacion).node();
     [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
       if (i > -1 && tr && tr.children[i]) {
@@ -1205,7 +1159,7 @@ let data = filasSoloActivas.map(row => [...row, "", "", ""]);
   return (chkA && chkA.checked) || (chkP && chkP.checked);
 }
 
-// Habilita/deshabilita campos cuando se marca un check: solo MUNICIPIO queda operativo (se llena por el check)
+// Habilita/deshabilita campos cuando se marca un check: solo MUNICIPIO queda operativo
 function setOnlyMunicipioModeUI(on){
   const ta = document.getElementById('datos_row');
   if (ta){
@@ -1213,12 +1167,10 @@ function setOnlyMunicipioModeUI(on){
     ta.readOnly = on;
     ta.disabled = on;
   }
-  // Bloquear todos menos MUNICIPIO
   ['departamento','puesto','direccion','mesa'].forEach(id=>{
     const el = document.getElementById(id);
     if (el) el.disabled = on;
   });
-  // MUNICIPIO: no lo habilitamos para escritura; lo fijan los checks. Lo mantenemos habilitado (sin disabled) pero puede seguir readonly.
   const mun = document.getElementById('municipio');
   if (mun){ mun.disabled = false; }
 }
@@ -1270,7 +1222,6 @@ function onEstadoCheckboxChange(chk, estado){
     }
   }
 
-  // UI y requeridos
   updateDatosRowRequirement();
   setOnlyMunicipioModeUI(isEstadoCheckboxActive());
 }
