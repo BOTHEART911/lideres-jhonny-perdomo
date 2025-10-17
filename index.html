@@ -89,8 +89,9 @@
     .icon-btn-header { background: transparent; border: none; cursor: pointer; font-size: 1.5em; vertical-align: middle; color: #1976d2; }
     .icon-btn-header:hover { color: #28a745; }
     .btn-votacion.azul { background-color: #007BFF !important; }
-    .btn-votacion.gris { background-color: #6c757d !important; color: #fff !important; }
-    .btn-votacion.naranja { background-color: #f39c12 !important; color: #fff !important; }
+   /* Colores de estado para el botón "Votación" */
+.btn-votacion.gris { background-color: #6c757d !important; color: #fff !important; }     /* A LA ESPERA */
+.btn-votacion.naranja { background-color: #f39c12 !important; color: #fff !important; }  /* POR CONFIRMAR */
 
     #tituloLider { color: #007bff !important; font-weight: bold; font-size: 1.6em; text-align: left; margin: 20px 0 5px 0; letter-spacing: 1px; text-shadow: none !important; }
 
@@ -141,7 +142,6 @@
       background:rgba(0,0,0,.35);
       z-index:9999; backdrop-filter: blur(2px);
       opacity:1; transition: opacity .12s ease;
-      will-change: opacity;
     }
     .loader.hidden{
       display:flex !important;
@@ -175,7 +175,7 @@
     .spinner-ios i:nth-child(11) { transform: rotate(300deg) translateY(-24px); animation-delay:-0.1s; }
     .spinner-ios i:nth-child(12) { transform: rotate(330deg) translateY(-24px); animation-delay: 0s; }
 
-    /* Campo password visual */
+    /* Mantener mismo ancho y estilo que antes, ahora para password */
     #contactosForm input[type="password"] {
       width: 100%;
       padding: 8px 10px;
@@ -185,18 +185,73 @@
       margin-bottom: 10px;
       margin-top: 1px;
     }
-    .input-pass-group { position: relative; width: 100%; }
-    .input-pass-group input { width: 100%; padding-right: 42px; }
-    .input-pass-group .toggle-pass {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      border: 0; background: transparent; padding: 4px; cursor: pointer; line-height: 0; color: #007bff;
+    /* Contenedor y botón del toggle */
+    .input-pass-group {
+      position: relative;
+      width: 100%;
     }
-    .input-pass-group .toggle-pass:focus-visible { outline: 2px solid #80bdff; border-radius: 4px; }
+    .input-pass-group input {
+      width: 100%;
+      padding-right: 42px; /* espacio para el botón */
+    }
+    .input-pass-group .toggle-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      padding: 4px;
+      cursor: pointer;
+      line-height: 0;
+      color: #007bff;
+    }
+    .input-pass-group .toggle-pass:focus-visible {
+      outline: 2px solid #80bdff;
+      border-radius: 4px;
+    }
 
-    /* Botón Iniciar Sesión centrado */
-    #contactosForm #btn-iniciar-sesion { display: block; width: max-content; margin: 8px auto 12px; padding: 10px 22px; font-weight: 800; font-size: 1.15rem; letter-spacing: .3px; border-radius: 8px; }
-    #contactosForm #btn-iniciar-sesion big { font-size: inherit; }
-    #contactosForm .btn-center{ display: flex; justify-content: center; }
+    /* OVERRIDE: Centrar solo el botón Iniciar Sesión (sin afectar otros .boton-efecto) */
+    #contactosForm #btn-iniciar-sesion {
+      display: block;
+      width: max-content;
+      margin: 0 auto 12px;
+    }
+
+    /* Centrar y mejorar tipografía del botón Iniciar Sesión (solo este) */
+#contactosForm #btn-iniciar-sesion {
+  display: block;
+  width: max-content;        /* se ajusta al texto */
+  margin: 8px auto 12px;     /* centra horizontalmente */
+  padding: 10px 22px;        /* un poco más de aire */
+  font-weight: 800;          /* letra más marcada */
+  font-size: 1.15rem;        /* tamaño ligeramente mayor */
+  letter-spacing: .3px;      /* mejor legibilidad */
+  border-radius: 8px;        /* bordes suaves */
+}
+
+/* Evita que <big> altere el tamaño dentro del botón */
+#contactosForm #btn-iniciar-sesion big { font-size: inherit; }
+
+    /* Centrado perfecto del botón y mejora tipográfica */
+#contactosForm .btn-center{
+  display: flex;
+  justify-content: center;   /* centra horizontalmente */
+}
+
+#contactosForm #btn-iniciar-sesion{
+  width: auto !important;    /* anula el width:100% heredado */
+  display: inline-block !important;
+  margin: 8px 0 12px 0;      /* separación */
+  padding: 10px 22px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: .3px;
+  border-radius: 8px;
+}
+
+#contactosForm #btn-iniciar-sesion big { font-size: inherit; } /* por si queda <big> */
+    
   </style>
 </head>
 <body>
@@ -219,8 +274,18 @@
     </p>
     <label for="documento"><big><b>Documento:</b></big></label>
     <div class="input-pass-group">
-      <input type="password" id="documento" name="documento" placeholder="Sin puntos ni espacios" required inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+      <input
+        type="password"
+        id="documento"
+        name="documento"
+        placeholder="Sin puntos ni espacios"
+        required
+        inputmode="numeric"
+        pattern="[0-9]*"
+        autocomplete="off"
+      />
       <button type="button" id="toggleDocumento" class="toggle-pass" aria-label="Mostrar/Ocultar documento" aria-controls="documento" aria-pressed="false" title="Mostrar/Ocultar">
+        <!-- OJO CERRADO (inicial: oculto) -->
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
           <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
           <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
@@ -229,8 +294,10 @@
     </div>
     <div id="errorMensaje" class="error"></div>
     <div class="btn-center">
-      <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()">Iniciar Sesión</button>
-    </div>
+  <button type="button" class="boton-efecto" id="btn-iniciar-sesion" onclick="validarDocumento()">
+    Iniciar Sesión
+  </button>
+</div>
     <div class="image-container">
       <img id="imagePreview" src="https://res.cloudinary.com/dqqeavica/image/upload/v1753538919/BANNER_JHONNY_e0yw7m.png" alt="Preview Image">
     </div>
@@ -267,103 +334,113 @@
   </main>
 
   <!-- Modal Votación -->
-  <div class="modal fade" id="modalVotacion" tabindex="-1" aria-labelledby="modalVotacionLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <form id="formVotacion">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalVotacionLabel">Votación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+<div class="modal fade" id="modalVotacion" tabindex="-1" aria-labelledby="modalVotacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form id="formVotacion">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalVotacionLabel">Votación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <button type="button" class="boton-efecto" onclick="window.open('https://wsp.registraduria.gov.co/censo/consultar/', '_blank')">Ir a Consultar</button>
           </div>
-          <div class="modal-body">
-            <div>
-              <button type="button" class="boton-efecto" onclick="window.open('https://wsp.registraduria.gov.co/censo/consultar/', '_blank')">Ir a Consultar</button>
-            </div>
-            <label for="datos_row">Pega aquí los datos de la Registraduría:</label>
-            <textarea class="form-control" id="datos_row" rows="4" placeholder="Pega aquí la info..." style="margin-bottom:10px;" required></textarea>
+          <label for="datos_row">Pega aquí los datos de la Registraduría:</label>
+          <textarea class="form-control" id="datos_row" rows="4" placeholder="Pega aquí la info..." style="margin-bottom:10px;" required></textarea>
 
-            <div class="row g-2">
-              <div class="col-md-4"><input id="nuip" class="form-control" type="text" placeholder="NUIP" readonly></div>
-              <div class="col-md-4"><input id="departamento" class="form-control" type="text" placeholder="DEPARTAMENTO" readonly></div>
-              <div class="col-md-4"><input id="municipio" class="form-control" type="text" placeholder="MUNICIPIO" readonly></div>
-            </div>
-
-            <div class="row g-2 mt-2">
-              <div class="col-md-4"><input id="puesto" class="form-control" type="text" placeholder="PUESTO" readonly></div>
-              <div class="col-md-4"><input id="direccion" class="form-control" type="text" placeholder="DIRECCIÓN" readonly></div>
-              <div class="col-md-4"><input id="mesa" class="form-control" type="text" placeholder="MESA" readonly></div>
-            </div>
-
-            <div class="mt-3">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="chkALaEspera" onchange="onEstadoCheckboxChange(this, 'A LA ESPERA')">
-                <label class="form-check-label" for="chkALaEspera">Marcar solo el MUNICIPIO como "A LA ESPERA"</label>
-              </div>
-              <div class="form-check mt-1">
-                <input class="form-check-input" type="checkbox" id="chkPorConfirmar" onchange="onEstadoCheckboxChange(this, 'POR CONFIRMAR')">
-                <label class="form-check-label" for="chkPorConfirmar">Marcar solo el MUNICIPIO como "POR CONFIRMAR"</label>
-              </div>
-            </div>
+          <div class="row g-2">
+            <div class="col-md-4"><input id="nuip" class="form-control" type="text" placeholder="NUIP" readonly></div>
+            <div class="col-md-4"><input id="departamento" class="form-control" type="text" placeholder="DEPARTAMENTO" readonly></div>
+            <div class="col-md-4"><input id="municipio" class="form-control" type="text" placeholder="MUNICIPIO" readonly></div>
           </div>
 
-          <div class="modal-footer">
-            <button id="btnGuardarVotacion" type="submit" class="boton-efecto">Guardar</button>
+          <div class="row g-2 mt-2">
+            <div class="col-md-4"><input id="puesto" class="form-control" type="text" placeholder="PUESTO" readonly></div>
+            <div class="col-md-4"><input id="direccion" class="form-control" type="text" placeholder="DIRECCIÓN" readonly></div>
+            <div class="col-md-4"><input id="mesa" class="form-control" type="text" placeholder="MESA" readonly></div>
+          </div>
+
+          <!-- NUEVO: Checks opcionales para fijar solo MUNICIPIO -->
+          <div class="mt-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chkALaEspera"
+                     onchange="onEstadoCheckboxChange(this, 'A LA ESPERA')">
+              <label class="form-check-label" for="chkALaEspera">
+                Marcar solo el MUNICIPIO como "A LA ESPERA"
+              </label>
+            </div>
+            <div class="form-check mt-1">
+              <input class="form-check-input" type="checkbox" id="chkPorConfirmar"
+                     onchange="onEstadoCheckboxChange(this, 'POR CONFIRMAR')">
+              <label class="form-check-label" for="chkPorConfirmar">
+                Marcar solo el MUNICIPIO como "POR CONFIRMAR" 
+              </label>
+            </div>
           </div>
         </div>
-      </form>
-    </div>
+
+        <div class="modal-footer">
+          <button id="btnGuardarVotacion" type="submit" class="boton-efecto">Guardar</button>
+        </div>
+      </div>
+    </form>
   </div>
+</div>
 
 <script>
+  // Maneja checks excluyentes y setea/restituye el valor del campo MUNICIPIO
   function onEstadoCheckboxChange(chk, estado){
-    const inputMun = document.getElementById('municipio');
-    if (!inputMun) return;
+  const inputMun = document.getElementById('municipio');
+  if (!inputMun) return;
 
-    const chkA = document.getElementById('chkALaEspera');
-    const chkP = document.getElementById('chkPorConfirmar');
-    const other = (estado === 'A LA ESPERA') ? chkP : chkA;
+  const chkA = document.getElementById('chkALaEspera');
+  const chkP = document.getElementById('chkPorConfirmar');
+  const other = (estado === 'A LA ESPERA') ? chkP : chkA;
 
-    if (chk.checked){
-      if (other && other.checked) other.checked = false;
+  if (chk.checked){
+    if (other && other.checked) other.checked = false;
 
-      if (inputMun.dataset.prevValue === undefined){
-        inputMun.dataset.prevValue = inputMun.value || '';
-      }
-      inputMun.value = estado;
-    } else {
-      const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
-      if (!algunoActivo){
-        if (inputMun.dataset.prevValue !== undefined){
-          inputMun.value = inputMun.dataset.prevValue;
-          delete inputMun.dataset.prevValue;
-        }
-      } else {
-        inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
-      }
+    if (inputMun.dataset.prevValue === undefined){
+      inputMun.dataset.prevValue = inputMun.value || '';
     }
-
-    updateDatosRowRequirement();
-    setOnlyMunicipioModeUI(isEstadoCheckboxActive());
-  }
-
-  (function(){
-    const modalEl = document.getElementById('modalVotacion');
-    if (!modalEl) return;
-    modalEl.addEventListener('show.bs.modal', function(){
-      const chkA = document.getElementById('chkALaEspera');
-      const chkP = document.getElementById('chkPorConfirmar');
-      if (chkA) chkA.checked = false;
-      if (chkP) chkP.checked = false;
-
-      const inputMun = document.getElementById('municipio');
-      if (inputMun && inputMun.dataset.prevValue !== undefined){
+    inputMun.value = estado;
+  } else {
+    const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
+    if (!algunoActivo){
+      if (inputMun.dataset.prevValue !== undefined){
+        inputMun.value = inputMun.dataset.prevValue;
         delete inputMun.dataset.prevValue;
       }
+    } else {
+      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
+    }
+  }
 
-      setOnlyMunicipioModeUI(false);
-      updateDatosRowRequirement();
-    });
-  })();
+  // NUEVO: marcar textarea como opcional si hay algún check activo
+  updateDatosRowRequirement();
+}
+
+  // Al mostrar el modal, resetear checks y estado previo
+  (function(){
+    const modalEl = document.getElementById('modalVotacion');
+  if (!modalEl) return;
+  modalEl.addEventListener('show.bs.modal', function(){
+    const chkA = document.getElementById('chkALaEspera');
+    const chkP = document.getElementById('chkPorConfirmar');
+    if (chkA) chkA.checked = false;
+    if (chkP) chkP.checked = false;
+
+    const inputMun = document.getElementById('municipio');
+    if (inputMun && inputMun.dataset.prevValue !== undefined){
+      delete inputMun.dataset.prevValue;
+    }
+
+    // Al abrir: modo normal (textarea requerido, campos habilitados)
+    setOnlyMunicipioModeUI(false);
+    updateDatosRowRequirement();
+  });
+})();
 </script>
 
   <!-- Modal WhatsApp -->
@@ -392,9 +469,8 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <!-- QUITADO: scripts Responsive que causaban error de consola -->
-  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script> -->
-  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
+  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.bootstrap5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.dataTables.min.js"></script>
@@ -406,10 +482,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
   <script>
-    // 1) URL del Web App
+    // 1) URL del Web App (actualiza si despliegas nueva versión)
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzHRNuyX9hdqg-yz3-Q5E6qu5FRbVJqiBkTbbsGGO1GLKCgdCmEQLprMkup8w1n7AqF/exec';
 
-    // 1.1) Sonidos
+    // 1.1) Sonidos (mismo set que usas en el portal)
     const SOUNDS = {
       question: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011577/Pay_fail_ls2aif.mp3',
       info: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Default_notification_pkp4wr.mp3',
@@ -422,34 +498,55 @@
       back: 'https://res.cloudinary.com/dqqeavica/video/upload/v1759011578/Keyboard_Enter_b9k2dc.mp3'
     };
     function playSoundOnce(url){
-      try{ const a = new Audio(url); a.preload = 'auto'; a.play().catch(()=>{}); }catch(e){}
+      try{
+        const a = new Audio(url);
+        a.preload = 'auto';
+        a.play().catch(()=>{});
+      }catch(e){}
     }
+    // 1.2) Parchear SweetAlert2 para sonar según icono
     if (window.Swal && typeof Swal.fire === 'function'){
       const __fire = Swal.fire.bind(Swal);
       Swal.fire = function(options = {}, ...rest){
         try{
-          if (options.soundTag === 'resumen'){ playSoundOnce(SOUNDS.resumen); }
-          else { const icon = options.icon || options.type; if (icon && SOUNDS[icon]) playSoundOnce(SOUNDS[icon]); }
+          if (options.soundTag === 'resumen'){
+            playSoundOnce(SOUNDS.resumen);
+          } else {
+            const icon = options.icon || options.type;
+            if (icon && SOUNDS[icon]) playSoundOnce(SOUNDS[icon]);
+          }
         }catch(e){}
         return __fire(options, ...rest);
       }
     }
 
-    // Loader centrado
+    // 1.3) Loader centrado (smart delay)
     const loader = document.getElementById('loader');
     let loadingCount = 0, loaderTimer = null;
-    function startLoading(){ loadingCount++; if (loadingCount === 1){ loaderTimer = setTimeout(()=>{ loader.classList.remove('hidden'); loaderTimer=null; },120); } }
-    function stopLoading(){ if (loadingCount===0) return; loadingCount--; if (loadingCount===0){ if (loaderTimer){ clearTimeout(loaderTimer); loaderTimer=null; } loader.classList.add('hidden'); } }
+    function startLoading(){
+      loadingCount++;
+      if (loadingCount === 1){
+        loaderTimer = setTimeout(()=>{ loader.classList.remove('hidden'); loaderTimer = null; }, 120);
+      }
+    }
+    function stopLoading(){
+      if (loadingCount === 0) return;
+      loadingCount--;
+      if (loadingCount === 0){
+        if (loaderTimer){ clearTimeout(loaderTimer); loaderTimer = null; }
+        loader.classList.add('hidden');
+      }
+    }
 
-    // 2) Adaptadores API
+    // 2) Adaptadores API (fetch)
     async function apiValidarLider(documento) {
       startLoading();
       try{
         const url = new URL(WEB_APP_URL);
         url.searchParams.set('action', 'validarLider');
         url.searchParams.set('documento', documento);
-        url.searchParams.set('t', Date.now().toString()); // cache-buster
-        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' }); // sin headers
+        url.searchParams.set('t', Date.now().toString()); // CAMBIO: cache-buster para evitar cache
+        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' }); // CAMBIO: no-store, sin headers extra
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return await resp.json();
       } finally { stopLoading(); }
@@ -473,6 +570,7 @@
       } finally { stopLoading(); }
     }
 
+    // Eliminar filas (Admin)
     async function apiEliminarFilas({ documento, nuips }) {
       startLoading();
       try {
@@ -496,32 +594,55 @@
     let filasFiltradas = [];
     let encabezados = [];
     let tabla;
-    let documentoGuardado = "";
+    let documentoGuardado = ""; // Para recarga directa
     let deleteMode = false;
     let selectedNuips = new Set();
+
+    // Columnas a ocultar por defecto (índices de encabezados)
     const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA", "ESTADO"];
 
     async function validarDocumento(soloTabla) {
       let documento = "";
-      if (soloTabla && documentoGuardado) documento = documentoGuardado;
-      else documento = document.getElementById('documento').value.trim();
+      if (soloTabla && documentoGuardado) {
+        documento = documentoGuardado;
+      } else {
+        documento = document.getElementById('documento').value.trim();
+      }
 
       if (!soloTabla) {
-        if (documento === "") { Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Ingresa un documento para validar.', customClass: { popup: 'swal2-responsive-popup' } }); return; }
-        if (!/^\d{6,10}$/.test(documento)) { Swal.fire({ icon: 'warning', title: 'Formato incorrecto', text: 'Ingresa un N° de Documento correcto (6 a 10 dígitos).', customClass: { popup: 'swal2-responsive-popup' } }); return; }
+        if (documento === "") {
+          Swal.fire({ icon: 'warning', title: 'Campo requerido', text: 'Ingresa un documento para validar.', customClass: { popup: 'swal2-responsive-popup' } });
+          return;
+        }
+        if (!/^\d{6,10}$/.test(documento)) {
+          Swal.fire({ icon: 'warning', title: 'Formato incorrecto', text: 'Ingresa un N° de Documento correcto (6 a 10 dígitos).', customClass: { popup: 'swal2-responsive-popup' } });
+          return;
+        }
         if (navigator.clipboard) { navigator.clipboard.writeText(documento).catch(()=>{}); }
       }
 
+      // Sonido al intentar login
       if (!soloTabla) playSoundOnce(SOUNDS.login);
 
-      Swal.fire({ title: 'Buscando...', html: 'Por favor espera unos segundos.', allowOutsideClick: false, allowEscapeKey: false, didOpen: () => { Swal.showLoading(); } });
+      Swal.fire({
+        title: 'Buscando...',
+        html: 'Por favor espera unos segundos.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
 
       try {
         const res = await apiValidarLider(documento);
         Swal.close();
 
         if (!res.existe) {
-          Swal.fire({ icon: 'error', title: 'Este Portal es de uso exclusivo de los Líderes de Jhonny Perdomo', html: 'Ponte en contacto con el Equipo del Hacer.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>', width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' } });
+          Swal.fire({
+            icon: 'error',
+            title: 'Este Portal es de uso exclusivo de los Líderes de Jhonny Perdomo',
+            html: 'Ponte en contacto con el Equipo del Hacer.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>',
+            width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' }
+          });
           mostrarFormulario();
           return;
         }
@@ -531,7 +652,12 @@
         document.getElementById('tituloLider').textContent = "Líder " + nombreLider;
 
         if (!res.tieneReferidos) {
-          Swal.fire({ icon: 'info', title: 'No Tienes Referidos', html: 'Es importante contar con tu apoyo.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>', width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' } });
+          Swal.fire({
+            icon: 'info',
+            title: 'No Tienes Referidos',
+            html: 'Es importante contar con tu apoyo.<br><br><div class="copyright">Copyright © <a href="https://whatsapp.com/channel/0029VbBEYJ83LdQbOODLO10S" target="_blank"><b>BOT HEART</b></a></div>',
+            width: '90%', padding: '1rem', customClass: { popup: 'swal2-responsive-popup' }
+          });
           mostrarFormulario();
           return;
         }
@@ -567,209 +693,257 @@
     }
 
     function centrarEncabezadosTabla() {
-      $('#tablaReferidos thead th')
+      $('#tablaReferidos thead th, #tablaReferidos tfoot th')
         .removeClass('text-start text-left text-end text-right')
         .addClass('text-center')
         .css('text-align', 'center');
     }
 
     function inicializarTabla() {
-      // Reset seguro sin vaciar la estructura original
-      if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-        $('#tablaReferidos').DataTable().destroy();
-        // NO usar $('#tablaReferidos').empty();
-      }
+  // CAMBIO: Reset seguro de DataTable sin vaciar la estructura original
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+    $('#tablaReferidos').DataTable().destroy();
+    // IMPORTANTE: NO usar $('#tablaReferidos').empty();
+  }
 
-      // Determinar ESTADO
-      let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
-      if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14;
+  // 0) Determinar índice de la columna ESTADO (por nombre o fallback a O=14)
+  let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
+  if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
 
-      // Columnas y títulos
-      let colsDT = encabezados.map(header => ({ title: header }));
-      colsDT.push({ title: "Votación" });
-      colsDT.push({ title: "WhatsApp" });
-      colsDT.push({ title: "Seleccionar" });
+  // 1) Definir columnas de la tabla (manteniendo tus 3 extras)
+  let colsDT = encabezados.map(header => ({ title: header }));
+  colsDT.push({ title: "Votación" });
+  colsDT.push({ title: "WhatsApp" });
+  colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
 
-      // Escribir SOLO thead; tfoot vacío
-      const $table = $('#tablaReferidos');
-      $table.find('thead').html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
-      $table.find('tfoot').empty();
+  // Encabezados y pie
+  $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
+  $("#tablaReferidos tfoot").html(""); // CAMBIO: pie vacío para evitar segunda línea de encabezado
 
-      // Filtrar ACTIVOS, invertir orden (última fila primero) y añadir columnas extra
-      const filasSoloActivas = Array.isArray(filasFiltradas)
-        ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
-        : [];
-      let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); // <-- invertido
+  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
+  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
+  const filasSoloActivas = Array.isArray(filasFiltradas)
+    ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
+    : [];
+  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
 
-      // Ocultamientos por nombre + ESTADO
-      const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(i=>i>-1);
-      if (idxEstado > -1 && !ocultarIdxs.includes(idxEstado)) ocultarIdxs.push(idxEstado);
+  // 3) (ELIMINADO) Reset que vaciaba la tabla. Ya lo hicimos arriba sin empty().
 
-      // Botones
-      const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
-      const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
-      const adminExportButtons = [
-        { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-        { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-        { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
-        { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
-        colvisButton
-      ];
+  // 4) Ocultar columnas por nombre (tu lista) y asegurar ocultar ESTADO
+  const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
+  if (idxEstado > -1 && !ocultarIdxs.includes(idxEstado)) ocultarIdxs.push(idxEstado); // asegura ocultar O/ESTADO
 
-      const idxVotacion  = colsDT.length - 3;
-      const idxWhatsapp  = colsDT.length - 2;
-      const idxSeleccion = colsDT.length - 1;
+  // 5) Botones por rol (sin cambios)
+  const isAdmin = String(nombreLider || '').trim().toUpperCase() === 'ADMINISTRADOR';
+  const colvisButton = { extend: 'colvis', text: 'Filtrar Columnas' };
 
-      // Botones de eliminación (modo admin)
-      const btnEliminar = {
-        text: `Eliminar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-outline-danger',
-        attr: { id: 'btnEliminarFilas' },
-        action: function(e, dt) {
-          playSoundOnce(SOUNDS.warning);
-          deleteMode = true;
-          selectedNuips.clear();
-          dt.column(idxSeleccion).visible(true);
-          $('#btnEliminarFilas').addClass('d-none');
-          $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
-          Swal.fire({ icon: 'warning', title: 'Modo eliminación', text: 'Selecciona una o varias filas para eliminar.', timer: 1800, showConfirmButton: false, customClass: { popup: 'swal2-responsive-popup' } });
-        }
-      };
+  const adminExportButtons = [
+    { extend: 'copy',  text: '<i class="bi bi-clipboard-fill"></i>', className: 'btn btn-secondary', exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+    { extend: 'excel', text: '<i class="bi bi-file-earmark-excel-fill"></i>', className: 'btn btn-success',  exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'pdf',   text: '<i class="bi bi-file-earmark-pdf-fill"></i>',   className: 'btn btn-danger',   exportOptions: { columns: ':visible' }, filename: 'Referidos ' + nombreLider, title: 'Referidos ' + nombreLider },
+    { extend: 'print', text: '<i class="bi bi-printer-fill"></i>',            className: 'btn btn-info',     exportOptions: { columns: ':visible' }, title: 'Referidos ' + nombreLider },
+    colvisButton
+  ];
 
-      const btnConfirmar = {
-        text: `Confirmar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-danger d-none',
-        attr: { id: 'btnConfirmarEliminacion' },
-        action: async function(e, dt) {
-          if (selectedNuips.size === 0) { Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } }); return; }
-          const nuips = Array.from(selectedNuips);
-          try {
-            Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
-            Swal.close();
-            if (!res || res.ok !== true) { throw new Error(res && res.error ? res.error : 'No se pudo eliminar'); }
+  // 6) Índices de las columnas especiales (últimas tres)
+  const idxVotacion = colsDT.length - 3;
+  const idxWhatsapp = colsDT.length - 2;
+  const idxSeleccion = colsDT.length - 1;
 
-            dt.rows((idx, data) => nuips.includes(String((data && data[0]) || ''))).remove().draw(false);
-            exitDeleteMode(dt);
-
-            playSoundOnce(SOUNDS.success);
-            Swal.fire({ icon: 'success', title: 'Fila o filas eliminadas', html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.', timer: 3500, showConfirmButton: false, customClass: { popup: 'swal2-responsive-popup' } });
-          } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
-          }
-        }
-      };
-
-      const btnDescartar = {
-        text: `Descartar <span class="ms-1 align-middle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
-          </svg>
-        </span>`,
-        className: 'btn btn-secondary d-none',
-        attr: { id: 'btnDescartarEliminacion' },
-        action: function(e, dt) {
-          playSoundOnce(SOUNDS.back);
-          exitDeleteMode(dt);
-        }
-      };
-
-      const buttonsArr = isAdmin
-        ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
-        : [colvisButton];
-
-      // Inicializar DataTable
-      tabla = $('#tablaReferidos').DataTable({
-        language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
-        responsive: false,
-        dom: 'Blfrtip',
-        scrollX: true,
-        autoWidth: true,
-        pagingType: 'full_numbers',
-        lengthMenu: [5, 10, 20, 50, 100],
-        columns: colsDT,
-        data: data,
-        order: [], // <-- sin orden inicial; respeta el orden invertido del arreglo
-        buttons: buttonsArr,
-        columnDefs: [
-          ...ocultarIdxs.map(i => ({ targets: i, visible: false })),
-          {
-            targets: idxVotacion,
-            orderable: false,
-            searchable: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-              var municipio = idxMunicipio > -1 ? String(row[idxMunicipio] || '').trim().toUpperCase() : '';
-              var colorClass =
-                municipio === "A LA ESPERA"   ? "gris"    :
-                municipio === "POR CONFIRMAR" ? "naranja" :
-                municipio === "SIN CONSULTAR" ? "azul"    :
-                municipio === "FLANDES"       ? "verde"   : "";
-              return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-            }
-          },
-          {
-            targets: idxWhatsapp,
-            orderable: false,
-            searchable: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
-            }
-          },
-          {
-            targets: idxSeleccion,
-            orderable: false,
-            searchable: false,
-            visible: false,
-            className: 'text-center',
-            render: function(data, type, row, meta) {
-              const nuip = (row && row[0] != null) ? String(row[0]) : '';
-              const checked = selectedNuips.has(nuip) ? 'checked' : '';
-              return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
-            }
-          }
-        ]
+  // 7) Botones nativos de DataTables para Eliminar / Confirmar / Descartar (igual a tu código)
+  const btnEliminar = {
+    text: `Eliminar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-outline-danger',
+    attr: { id: 'btnEliminarFilas' },
+    action: function(e, dt) {
+      playSoundOnce(SOUNDS.warning);
+      deleteMode = true;
+      selectedNuips.clear();
+      dt.column(idxSeleccion).visible(true);
+      // Oculta "Eliminar" y muestra los otros
+      $('#btnEliminarFilas').addClass('d-none');
+      $('#btnConfirmarEliminacion, #btnDescartarEliminacion').removeClass('d-none');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Modo eliminación',
+        text: 'Selecciona una o varias filas para eliminar.',
+        timer: 1800,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-responsive-popup' }
       });
-
-      tabla.off('draw');
-      tabla.on('draw', function(){
-        centrarEncabezadosTabla();
-      });
-      centrarEncabezadosTabla();
-
-      // Delegación para checkboxes
-      $('#tablaReferidos tbody').off('change', 'input.row-select');
-      $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
-        const nuip = String(this.dataset.nuip || '');
-        if (!nuip) return;
-        if (this.checked) selectedNuips.add(nuip);
-        else selectedNuips.delete(nuip);
-      });
-
-      function exitDeleteMode(dt) {
-        deleteMode = false;
-        selectedNuips.clear();
-        dt.column(idxSeleccion).visible(false);
-        $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
-        $('#btnEliminarFilas').removeClass('d-none');
-      }
-      window.exitDeleteMode = exitDeleteMode;
     }
+  };
+
+  const btnConfirmar = {
+    text: `Confirmar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-danger d-none',
+    attr: { id: 'btnConfirmarEliminacion' },
+    action: async function(e, dt) {
+      if (selectedNuips.size === 0) {
+        Swal.fire({ icon: 'info', title: 'Sin selección', text: 'Selecciona al menos una fila.', customClass: { popup: 'swal2-responsive-popup' } });
+        return;
+      }
+
+      const nuips = Array.from(selectedNuips);
+
+      try {
+        Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        const res = await apiEliminarFilas({ documento: documentoGuardado, nuips });
+        Swal.close();
+
+        if (!res || res.ok !== true) {
+          throw new Error(res && res.error ? res.error : 'No se pudo eliminar');
+        }
+
+        // 1) Quitar filas localmente (feedback inmediato)
+        dt.rows(function(idx, data) {
+          return nuips.includes(String((data && data[0]) || ''));
+        }).remove().draw(false);
+
+        // 2) Salir del modo eliminación
+        exitDeleteMode(dt);
+
+        // 3) Alerta igual que Guardar (sin recargar tabla)
+        playSoundOnce(SOUNDS.success);
+        Swal.fire({
+          icon: 'success',
+          title: 'Fila o filas eliminadas',
+          html: (res.eliminadas || 0) + ' fila(s) eliminada(s).<br>Recuerda: algunas columnas pueden estar ocultas. Usa <b>Filtrar Columnas</b> para verlas.',
+          timer: 3500,
+          showConfirmButton: false,
+          customClass: { popup: 'swal2-responsive-popup' }
+        });
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error al eliminar', text: String(err), customClass: { popup: 'swal2-responsive-popup' } });
+      }
+    }
+  };
+
+  const btnDescartar = {
+    text: `Descartar <span class="ms-1 align-middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+      </svg>
+    </span>`,
+    className: 'btn btn-secondary d-none',
+    attr: { id: 'btnDescartarEliminacion' },
+    action: function(e, dt) {
+      playSoundOnce(SOUNDS.back);
+      exitDeleteMode(dt);
+    }
+  };
+
+  const buttonsArr = isAdmin
+    ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
+    : [colvisButton];
+
+  // 8) Crear la DataTable (sin cambios salvo ocultar ESTADO ya contemplado)
+  tabla = $('#tablaReferidos').DataTable({
+    language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
+    responsive: false,
+    dom: 'Blfrtip',
+    scrollX: true,
+    autoWidth: true,
+    pagingType: 'full_numbers',
+    lengthMenu: [5, 10, 20, 50, 100],
+    columns: colsDT,
+    data: data,
+    order: [[0, 'asc']],
+    buttons: buttonsArr,
+    columnDefs: [
+      // Oculta las columnas calculadas por nombre + ESTADO
+      ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
+      {
+        targets: idxVotacion,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+          var municipio = "";
+          if (idxMunicipio > -1) {
+            municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+          }
+
+          // Colores según estado del MUNICIPIO:
+          // - "A LA ESPERA"   => gris
+          // - "POR CONFIRMAR" => naranja
+          // - "SIN CONSULTAR" => azul
+          // - "FLANDES"       => verde
+          // - Otros           => rojo (por defecto .btn-votacion)
+          var colorClass =
+            municipio === "A LA ESPERA"   ? "gris"    :
+            municipio === "POR CONFIRMAR" ? "naranja" :
+            municipio === "SIN CONSULTAR" ? "azul"    :
+            municipio === "FLANDES"       ? "verde"   : "";
+
+          return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+        }
+      },
+      {
+        targets: idxWhatsapp,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
+        }
+      },
+      {
+        targets: idxSeleccion,
+        orderable: false,
+        searchable: false,
+        visible: false, // oculto por defecto
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          const nuip = (row && row[0] != null) ? String(row[0]) : '';
+          const checked = selectedNuips.has(nuip) ? 'checked' : '';
+          return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
+        }
+      }
+    ]
+  });
+
+  // 9) Eventos y helpers (sin cambios)
+  tabla.off('draw');
+  tabla.on('draw', centrarEncabezadosTabla);
+  centrarEncabezadosTabla();
+
+  // Delegación para checkboxes de filas
+  $('#tablaReferidos tbody').off('change', 'input.row-select');
+  $('#tablaReferidos tbody').on('change', 'input.row-select', function() {
+    const nuip = String(this.dataset.nuip || '');
+    if (!nuip) return;
+    if (this.checked) selectedNuips.add(nuip);
+    else selectedNuips.delete(nuip);
+  });
+
+  // Helper para salir del modo eliminación (UI + estado)
+  function exitDeleteMode(dt) {
+    deleteMode = false;
+    selectedNuips.clear();
+    dt.column(idxSeleccion).visible(false);
+    $('#btnConfirmarEliminacion, #btnDescartarEliminacion').addClass('d-none');
+    $('#btnEliminarFilas').removeClass('d-none');
+  }
+  // Exponer para los botones
+  window.exitDeleteMode = exitDeleteMode;
+}
 
     // ----- ACCIÓN VOTACIÓN -----
     let filaVotacion = null;
     function abrirModalVotacion(idxFila) {
       filaVotacion = idxFila;
+
+      // Copia NUIP (col 0) al portapapeles si existe
       try {
         const row0 = tabla.row(idxFila).data();
         if (row0 && row0[0] && navigator.clipboard) {
@@ -777,6 +951,7 @@
         }
       } catch(e){}
 
+      // Limpia campos del modal
       document.getElementById('datos_row').value = "";
       document.getElementById('nuip').value = "";
       document.getElementById('departamento').value = "";
@@ -786,15 +961,43 @@
       document.getElementById('mesa').value = "";
 
       const row = tabla.row(idxFila).data();
-      const idxByHeader = (...cands) => { for (const c of cands){ if (!c) continue; const i = encabezados.indexOf(c); if (i>-1) return i; } return -1; };
-      const firstValid = (...idxs) => { for (const i of idxs) if (i>-1) return i; return -1; };
 
-      const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-      const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
-      const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
-      const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
-      const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
+      // Helpers para resolver índices por encabezado (con alternativas y fallback a letras)
+      const idxByHeader = (...cands) => {
+        for (const c of cands) {
+          if (!c) continue;
+          const i = encabezados.indexOf(c);
+          if (i > -1) return i;
+        }
+        return -1;
+      };
+      const firstValid = (...idxs) => {
+        for (const i of idxs) if (i > -1) return i;
+        return -1;
+      };
 
+      // Preferido por nombre
+      const iDeptoByName = idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO');
+      const iMunByName   = idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO');
+      const iPueByName   = idxByHeader('PUESTO','PUESTO DE VOTACIÓN');
+      const iDirByName   = idxByHeader('DIRECCION','DIRECCIÓN');
+      const iMesaByName  = idxByHeader('MESA');
+
+      // Fallback por letras (tu GS guarda en G..L)
+      const iG = idxByHeader('G'); // NUIP no se usa aquí
+      const iH = idxByHeader('H'); // DEPARTAMENTO
+      const iI = idxByHeader('I'); // MUNICIPIO
+      const iJ = idxByHeader('J'); // PUESTO
+      const iK = idxByHeader('K'); // DIRECCION
+      const iL = idxByHeader('L'); // MESA
+
+      const iDepto = firstValid(iDeptoByName, iH);
+      const iMun   = firstValid(iMunByName,   iI);
+      const iPue   = firstValid(iPueByName,   iJ);
+      const iDir   = firstValid(iDirByName,   iK);
+      const iMesa  = firstValid(iMesaByName,  iL);
+
+      // NUIP (columna 0 visual)
       document.getElementById('nuip').value = (row && row[0] != null) ? String(row[0]) : "";
 
       const dep = (iDepto > -1 && row[iDepto]) ? String(row[iDepto]) : '';
@@ -848,119 +1051,197 @@
     document.getElementById('datos_row').addEventListener('input', intentarAutocompletar);
     document.getElementById('datos_row').addEventListener('blur', intentarAutocompletar);
 
+    // Guardar o actualizar datos de votación (actualización en sitio, preserva orden/paginación/filtros)
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
-      e.preventDefault();
+  e.preventDefault();
 
-      const nuip = document.getElementById('nuip').value.trim();
-      let departamento = document.getElementById('departamento').value.trim();
-      let municipio    = document.getElementById('municipio').value.trim();
-      let puesto       = document.getElementById('puesto').value.trim();
-      let direccion    = document.getElementById('direccion').value.trim();
-      let mesa         = document.getElementById('mesa').value.trim();
+  const nuip = document.getElementById('nuip').value.trim();
+  let departamento = document.getElementById('departamento').value.trim();
+  let municipio    = document.getElementById('municipio').value.trim();
+  let puesto       = document.getElementById('puesto').value.trim();
+  let direccion    = document.getElementById('direccion').value.trim();
+  let mesa         = document.getElementById('mesa').value.trim();
 
-      const onlyMunicipioMode = isEstadoCheckboxActive();
+  const onlyMunicipioMode = isEstadoCheckboxActive();
 
-      if (onlyMunicipioMode){
-        if (!nuip || !municipio){
-          Swal.fire({icon:'warning',title:'Completa los campos requeridos',text:'NUIP y MUNICIPIO son obligatorios cuando marcas el estado.'});
-          return;
-        }
-        const row = tabla.row(filaVotacion).data() || [];
+  if (onlyMunicipioMode){
+    // Solo exigimos NUIP + MUNICIPIO
+    if (!nuip || !municipio){
+      Swal.fire({icon:'warning',title:'Completa los campos requeridos',text:'NUIP y MUNICIPIO son obligatorios cuando marcas el estado.'});
+      return;
+    }
 
-        const idxByHeader = (...cands) => { for (const c of cands){ if (!c) continue; const i = encabezados.indexOf(c); if (i>-1) return i; } return -1; };
-        const firstValid = (...idxs) => { for (const i of idxs) if (i>-1) return i; return -1; };
+    // Rellenar los demás campos con los valores actuales de la fila para NO cambiarlos
+    const row = tabla.row(filaVotacion).data() || [];
 
-        const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-        const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
-        const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
-        const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
-        const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
-
-        if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
-        if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
-        if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
-        if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
-      } else {
-        if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
-          Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
-          return;
-        }
+    // Helpers locales para obtener índices por encabezado (con fallback letras G..L)
+    const idxByHeader = (...cands) => {
+      for (const c of cands) {
+        if (!c) continue;
+        const i = encabezados.indexOf(c);
+        if (i > -1) return i;
       }
+      return -1;
+    };
+    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
 
-      try {
-        const res = await apiGuardarVotacion({ idxFila: filaVotacion, nuip, departamento, municipio, puesto, direccion, mesa });
-        if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
+    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+    const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-        const idxByHeader = (...cands) => { for (const c of cands){ if (!c) continue; const i = encabezados.indexOf(c); if (i>-1) return i; } return -1; };
-        const firstValid = (...idxs) => { for (const i of idxs) if (i>-1) return i; return -1; };
-        const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-        const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
-        const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
-        const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
-        const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
+    // Si algún campo (que no es municipio) quedó vacío, lo tomamos de la tabla para preservarlo
+    if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
+    if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
+    if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
+    if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
+    // municipio ya lo fijamos por el check
+  } else {
+    // Modo normal: exige todo, como antes
+    if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
+      Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
+      return;
+    }
+  }
 
-        let nuevaFila = tabla.row(filaVotacion).data().slice();
-        if (iDepto > -1) nuevaFila[iDepto] = departamento;
-        if (iMun   > -1) nuevaFila[iMun]   = municipio;
-        if (iPue   > -1) nuevaFila[iPue]   = puesto;
-        if (iDir   > -1) nuevaFila[iDir]   = direccion;
-        if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+  try {
+    const res = await apiGuardarVotacion({
+      idxFila: filaVotacion,
+      nuip,
+      departamento,
+      municipio,
+      puesto,
+      direccion,
+      mesa
+    });
+    if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
-        tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+    // Actualiza locales por nombre con fallback a letras G..L
+    const idxByHeader = (...cands) => {
+      for (const c of cands) {
+        if (!c) continue;
+        const i = encabezados.indexOf(c);
+        if (i > -1) return i;
+      }
+      return -1;
+    };
+    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
 
-        const tr = tabla.row(filaVotacion).node();
-        [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
-          if (i > -1 && tr && tr.children[i]) {
-            tr.children[i].classList.add('resaltado-cambio');
-            setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
-          }
-        });
+    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+    const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-        bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
-        Swal.fire({
-          icon: 'success',
-          title: '¡Datos actualizados!',
-          html: (onlyMunicipioMode ? 'Se actualizó únicamente el <b>MUNICIPIO</b>.' : 'Los datos se guardaron correctamente.')
-                + '<br>Recuerda: algunas columnas pueden estar ocultas.<br>Usa <b>Filtrar Columnas</b> si necesitas verlas.',
-          timer: 3500,
-          showConfirmButton: false
-        });
-      } catch (err) {
-        Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
+    let nuevaFila = tabla.row(filaVotacion).data().slice();
+    if (iDepto > -1) nuevaFila[iDepto] = departamento;
+    if (iMun   > -1) nuevaFila[iMun]   = municipio;
+    if (iPue   > -1) nuevaFila[iPue]   = puesto;
+    if (iDir   > -1) nuevaFila[iDir]   = direccion;
+    if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+
+    tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+
+    // Resaltar cambios (especialmente MUNICIPIO en modo check)
+    const tr = tabla.row(filaVotacion).node();
+    [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
+      if (i > -1 && tr && tr.children[i]) {
+        tr.children[i].classList.add('resaltado-cambio');
+        setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
       }
     });
 
-    function isEstadoCheckboxActive(){
-      const chkA = document.getElementById('chkALaEspera');
-      const chkP = document.getElementById('chkPorConfirmar');
-      return (chkA && chkA.checked) || (chkP && chkP.checked);
-    }
-    function setOnlyMunicipioModeUI(on){
-      const ta = document.getElementById('datos_row');
-      if (ta){ ta.required = !on; ta.readOnly = on; ta.disabled = on; }
-      ['departamento','puesto','direccion','mesa'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.disabled = on;
-      });
-      const mun = document.getElementById('municipio');
-      if (mun){ mun.disabled = false; }
-    }
-    function updateDatosRowRequirement(){
-      const textarea = document.getElementById('datos_row');
-      if (!textarea) return;
-      const optional = isEstadoCheckboxActive();
-      textarea.required = !optional;
+    bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
+    Swal.fire({
+      icon: 'success',
+      title: '¡Datos actualizados!',
+      html: (onlyMunicipioMode
+        ? 'Se actualizó únicamente el <b>MUNICIPIO</b>.'
+        : 'Los datos se guardaron correctamente.'
+      ) + '<br>Recuerda: algunas columnas pueden estar ocultas.<br>Usa <b>Filtrar Columnas</b> si necesitas verlas.',
+      timer: 3500,
+      showConfirmButton: false
+    });
+  } catch (err) {
+    Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
+  }
+});
+   function isEstadoCheckboxActive(){
+  const chkA = document.getElementById('chkALaEspera');
+  const chkP = document.getElementById('chkPorConfirmar');
+  return (chkA && chkA.checked) || (chkP && chkP.checked);
+}
 
-      const label = document.querySelector('label[for="datos_row"]');
-      if (label){
-        if (!label.dataset.origText) label.dataset.origText = label.textContent;
-        if (optional) {
-          if (!/opcional/i.test(label.textContent)) label.textContent = label.dataset.origText + ' (opcional)';
-        } else {
-          label.textContent = label.dataset.origText;
-        }
+// Habilita/deshabilita campos cuando se marca un check: solo MUNICIPIO queda operativo (se llena por el check)
+function setOnlyMunicipioModeUI(on){
+  const ta = document.getElementById('datos_row');
+  if (ta){
+    ta.required = !on;
+    ta.readOnly = on;
+    ta.disabled = on;
+  }
+  // Bloquear todos menos MUNICIPIO
+  ['departamento','puesto','direccion','mesa'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.disabled = on;
+  });
+  // MUNICIPIO: no lo habilitamos para escritura; lo fijan los checks. Lo mantenemos habilitado (sin disabled) pero puede seguir readonly.
+  const mun = document.getElementById('municipio');
+  if (mun){ mun.disabled = false; }
+}
+
+// Ajusta solo la etiqueta "(opcional)" del textarea
+function updateDatosRowRequirement(){
+  const textarea = document.getElementById('datos_row');
+  if (!textarea) return;
+  const optional = isEstadoCheckboxActive();
+  textarea.required = !optional;
+
+  const label = document.querySelector('label[for="datos_row"]');
+  if (label){
+    if (!label.dataset.origText) label.dataset.origText = label.textContent;
+    if (optional) {
+      if (!/opcional/i.test(label.textContent)) {
+        label.textContent = label.dataset.origText + ' (opcional)';
       }
+    } else {
+      label.textContent = label.dataset.origText;
     }
+  }
+}
+
+function onEstadoCheckboxChange(chk, estado){
+  const inputMun = document.getElementById('municipio');
+  if (!inputMun) return;
+
+  const chkA = document.getElementById('chkALaEspera');
+  const chkP = document.getElementById('chkPorConfirmar');
+  const other = (estado === 'A LA ESPERA') ? chkP : chkA;
+
+  if (chk.checked){
+    if (other && other.checked) other.checked = false;
+
+    if (inputMun.dataset.prevValue === undefined){
+      inputMun.dataset.prevValue = inputMun.value || '';
+    }
+    inputMun.value = estado;
+  } else {
+    const algunoActivo = (chkA && chkA.checked) || (chkP && chkP.checked);
+    if (!algunoActivo){
+      if (inputMun.dataset.prevValue !== undefined){
+        inputMun.value = inputMun.dataset.prevValue;
+        delete inputMun.dataset.prevValue;
+      }
+    } else {
+      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
+    }
+  }
+
+  // UI y requeridos
+  updateDatosRowRequirement();
+  setOnlyMunicipioModeUI(isEstadoCheckboxActive());
+}
 
     // ----- ACCIÓN WHATSAPP -----
     let filaWhatsapp = null;
@@ -991,10 +1272,11 @@
     document.getElementById('btn-iniciar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.login));
     document.getElementById('btn-cerrar-sesion')?.addEventListener('click', ()=> playSoundOnce(SOUNDS.logout));
 
-    // Ver/Ocultar campo documento
+    // Ver/Ocultar contenido del campo #documento y alternar ícono
     (function(){
       const input = document.getElementById('documento');
       const btn = document.getElementById('toggleDocumento');
+
       const ICON_EYE_SLASH = `
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
   <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
@@ -1005,13 +1287,17 @@
   <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
   <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
 </svg>`;
+
       if (input && btn){
         btn.addEventListener('click', function(){
           const willShow = input.type === 'password';
           input.type = willShow ? 'text' : 'password';
           btn.setAttribute('aria-pressed', String(willShow));
           btn.innerHTML = willShow ? ICON_EYE : ICON_EYE_SLASH;
-          try { input.focus(); input.setSelectionRange(input.value.length, input.value.length); } catch(e){}
+          try {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          } catch(e){}
         });
       }
     })();
