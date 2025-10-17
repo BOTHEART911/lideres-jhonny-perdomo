@@ -465,6 +465,24 @@
     </div>
   </div>
 
+  <!-- FAIL-SAFE: evita TypeError en responsive.bootstrap5.js si Responsive aún no está listo -->
+  <script>
+    (function($){
+      try{
+        if (!$ || !$.fn || !$.fn.dataTable) return;
+        if (!$.fn.dataTable.Responsive) {
+          $.fn.dataTable.Responsive = { display: {} };
+        }
+        if (!$.fn.dataTable.Responsive.display) {
+          $.fn.dataTable.Responsive.display = {};
+        }
+        if (typeof $.fn.dataTable.Responsive.display.modal !== 'function') {
+          $.fn.dataTable.Responsive.display.modal = function(){ return function(){}; };
+        }
+      }catch(e){}
+    })(window.jQuery);
+  </script>
+
   <!-- JS y dependencias -->
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
