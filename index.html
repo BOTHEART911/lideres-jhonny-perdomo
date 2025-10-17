@@ -945,7 +945,7 @@
       try {
         const row0 = tabla.row(idxFila).data();
         if (row0 && row0[0] && navigator.clipboard) {
-          navigator.clipboard.writeText(String(row0[0])).catch(()=>{});
+          navigator.clipboard.writeText(String(row0[0]).replace(/\D+/g,'')).catch(()=>{});
         }
       } catch(e){}
 
@@ -996,7 +996,7 @@
       const iMesa  = firstValid(iMesaByName,  iL);
 
       // NUIP (columna 0 visual)
-      document.getElementById('nuip').value = (row && row[0] != null) ? String(row[0]) : "";
+      document.getElementById('nuip').value = (row && row[0] != null) ? String(row[0]).replace(/\D+/g,'') : "";
 
       const dep = (iDepto > -1 && row[iDepto]) ? String(row[iDepto]) : '';
       const mun = (iMun   > -1 && row[iMun])   ? String(row[iMun])   : '';
@@ -1034,7 +1034,7 @@
       const pasted = textarea.value.trim();
       const partes = limpiarYSeparar(pasted);
       if (partes.length === 6) {
-        document.getElementById('nuip').value = partes[0];
+        document.getElementById('nuip').value = String(partes[0]).replace(/\D+/g,'');
         document.getElementById('departamento').value = partes[1];
         document.getElementById('municipio').value = partes[2];
         document.getElementById('puesto').value = partes[3];
@@ -1053,7 +1053,7 @@
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
   e.preventDefault();
 
-  const nuip = document.getElementById('nuip').value.trim();
+  const nuipClean = document.getElementById('nuip').value.replace(/\D+/g,'').trim();
   let departamento = document.getElementById('departamento').value.trim();
   let municipio    = document.getElementById('municipio').value.trim();
   let puesto       = document.getElementById('puesto').value.trim();
@@ -1106,7 +1106,7 @@
   try {
     const res = await apiGuardarVotacion({
       idxFila: filaVotacion,
-      nuip,
+      nuipClean,
       departamento,
       municipio,
       puesto,
