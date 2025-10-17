@@ -142,6 +142,7 @@
       background:rgba(0,0,0,.35);
       z-index:9999; backdrop-filter: blur(2px);
       opacity:1; transition: opacity .12s ease;
+      will-change: opacity;
     }
     .loader.hidden{
       display:flex !important;
@@ -469,8 +470,8 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
+  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script> -->
+  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.bootstrap5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.dataTables.min.js"></script>
@@ -545,8 +546,8 @@
         const url = new URL(WEB_APP_URL);
         url.searchParams.set('action', 'validarLider');
         url.searchParams.set('documento', documento);
-        url.searchParams.set('t', Date.now().toString()); // CAMBIO: cache-buster para evitar cache
-        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' }); // CAMBIO: no-store, sin headers extra
+        url.searchParams.set('t', Date.now().toString()); // cache-buster
+        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return await resp.json();
       } finally { stopLoading(); }
@@ -597,6 +598,7 @@
     let documentoGuardado = ""; // Para recarga directa
     let deleteMode = false;
     let selectedNuips = new Set();
+    let totalFilasActivas = 0; // usado para mapear índice visible -> índice original en la hoja
 
     // Columnas a ocultar por defecto (índices de encabezados)
     const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA", "ESTADO"];
@@ -699,13 +701,14 @@
         .css('text-align', 'center');
     }
 
-    function inicializarTabla() {
-  // CAMBIO: Reset seguro de DataTable sin vaciar la estructura original
-  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-    $('#tablaReferidos').DataTable().destroy();
-    // IMPORTANTE: NO usar $('#tablaReferidos').empty();
-  }
+    function getIdxFilaServidorFromDisplay(displayIdx){
+  const di = Number(displayIdx);
+  return (totalFilasActivas > 0 && di >= 0 && di < totalFilasActivas)
+    ? (totalFilasActivas - 1 - di)
+    : di;
+}
 
+    function inicializarTabla() {
   // 0) Determinar índice de la columna ESTADO (por nombre o fallback a O=14)
   let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
   if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
@@ -718,16 +721,21 @@
 
   // Encabezados y pie
   $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
-  $("#tablaReferidos tfoot").html(""); // CAMBIO: pie vacío para evitar segunda línea de encabezado
+$("#tablaReferidos tfoot").html(""); // pie vacío
 
   // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
   //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
   const filasSoloActivas = Array.isArray(filasFiltradas)
-    ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
-    : [];
-  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
+  ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
+  : [];
+totalFilasActivas = filasSoloActivas.length; // nuevo
+let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); // invertido
 
-  // 3) (ELIMINADO) Reset que vaciaba la tabla. Ya lo hicimos arriba sin empty().
+  // 3) Reset de DataTable si ya existe
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+  $('#tablaReferidos').DataTable().destroy();
+  // OJO: NO usar $('#tablaReferidos').empty();
+}
 
   // 4) Ocultar columnas por nombre (tu lista) y asegurar ocultar ESTADO
   const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
@@ -856,7 +864,7 @@
     lengthMenu: [5, 10, 20, 50, 100],
     columns: colsDT,
     data: data,
-    order: [[0, 'asc']],
+    order: [], // sin orden por columna
     buttons: buttonsArr,
     columnDefs: [
       // Oculta las columnas calculadas por nombre + ESTADO
@@ -916,6 +924,7 @@
   tabla.off('draw');
   tabla.on('draw', centrarEncabezadosTabla);
   centrarEncabezadosTabla();
+
 
   // Delegación para checkboxes de filas
   $('#tablaReferidos tbody').off('change', 'input.row-select');
@@ -1106,15 +1115,11 @@
   }
 
   try {
-    const res = await apiGuardarVotacion({
-      idxFila: filaVotacion,
-      nuip,
-      departamento,
-      municipio,
-      puesto,
-      direccion,
-      mesa
-    });
+    const idxFilaServer = getIdxFilaServidorFromDisplay(filaVotacion);
+const res = await apiGuardarVotacion({
+  idxFila: idxFilaServer,
+  nuip, departamento, municipio, puesto, direccion, mesa
+});
     if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
     // Actualiza locales por nombre con fallback a letras G..L
