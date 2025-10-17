@@ -709,6 +709,11 @@
 }
 
     function inicializarTabla() {
+  // Reset seguro (destruye DT si existe, antes de tocar el DOM)
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+    $('#tablaReferidos').DataTable().destroy();
+    // OJO: NO usar $('#tablaReferidos').empty();
+  }
   // 0) Determinar índice de la columna ESTADO (por nombre o fallback a O=14)
   let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
   if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
@@ -731,11 +736,7 @@ $("#tablaReferidos tfoot").html(""); // pie vacío
 totalFilasActivas = filasSoloActivas.length; // nuevo
 let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); // invertido
 
-  // 3) Reset de DataTable si ya existe
-  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-  $('#tablaReferidos').DataTable().destroy();
-  // OJO: NO usar $('#tablaReferidos').empty();
-}
+  
 
   // 4) Ocultar columnas por nombre (tu lista) y asegurar ocultar ESTADO
   const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
