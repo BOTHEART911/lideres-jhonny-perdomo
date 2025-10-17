@@ -937,84 +937,87 @@
 }
 
     // ----- ACCIÓN VOTACIÓN -----
-  let filaVotacion = null;
-  function abrirModalVotacion(idxFila) {
-    filaVotacion = idxFila;
+    let filaVotacion = null;
+    function abrirModalVotacion(idxFila) {
+      filaVotacion = idxFila;
 
-    // 1) Copiar al portapapeles el NUIP LIMPIO tomando la columna correcta por encabezado
-    try {
-      const row0 = tabla.row(idxFila).data() || [];
-      const headersNorm = (encabezados || []).map(h => String(h || '').trim().toUpperCase());
-      const candidatos = ['NUIP','DOCUMENTO','DOCUMENTO/NUIP','CEDULA','CÉDULA'];
-      let idxNuip = 0;
-      for (const c of candidatos) {
-        const i = headersNorm.indexOf(c);
-        if (i >= 0) { idxNuip = i; break; }
+      // Copia NUIP (col 0) al portapapeles si existe
+      try {
+        const row0 = tabla.row(idxFila).data();
+        if (row0 && row0[0] && navigator.clipboard) {
+          navigator.clipboard.writeText(String(row0[0])).catch(()=>{});
+        }
+      } catch(e){}
+
+      // Limpia campos del modal
+      document.getElementById('datos_row').value = "";
+      document.getElementById('nuip').value = "";
+      document.getElementById('departamento').value = "";
+      document.getElementById('municipio').value = "";
+      document.getElementById('puesto').value = "";
+      document.getElementById('direccion').value = "";
+      document.getElementById('mesa').value = "";
+
+      const row = tabla.row(idxFila).data();
+
+      // Helpers para resolver índices por encabezado (con alternativas y fallback a letras)
+      const idxByHeader = (...cands) => {
+        for (const c of cands) {
+          if (!c) continue;
+          const i = encabezados.indexOf(c);
+          if (i > -1) return i;
+        }
+        return -1;
+      };
+      const firstValid = (...idxs) => {
+        for (const i of idxs) if (i > -1) return i;
+        return -1;
+      };
+
+      // Preferido por nombre
+      const iDeptoByName = idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO');
+      const iMunByName   = idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO');
+      const iPueByName   = idxByHeader('PUESTO','PUESTO DE VOTACIÓN');
+      const iDirByName   = idxByHeader('DIRECCION','DIRECCIÓN');
+      const iMesaByName  = idxByHeader('MESA');
+
+      // Fallback por letras (tu GS guarda en G..L)
+      const iG = idxByHeader('G'); // NUIP no se usa aquí
+      const iH = idxByHeader('H'); // DEPARTAMENTO
+      const iI = idxByHeader('I'); // MUNICIPIO
+      const iJ = idxByHeader('J'); // PUESTO
+      const iK = idxByHeader('K'); // DIRECCION
+      const iL = idxByHeader('L'); // MESA
+
+      const iDepto = firstValid(iDeptoByName, iH);
+      const iMun   = firstValid(iMunByName,   iI);
+      const iPue   = firstValid(iPueByName,   iJ);
+      const iDir   = firstValid(iDirByName,   iK);
+      const iMesa  = firstValid(iMesaByName,  iL);
+
+      // NUIP (columna 0 visual)
+      document.getElementById('nuip').value = (row && row[0] != null) ? String(row[0]) : "";
+
+      const dep = (iDepto > -1 && row[iDepto]) ? String(row[iDepto]) : '';
+      const mun = (iMun   > -1 && row[iMun])   ? String(row[iMun])   : '';
+      const pue = (iPue   > -1 && row[iPue])   ? String(row[iPue])   : '';
+      const dir = (iDir   > -1 && row[iDir])   ? String(row[iDir])   : '';
+      const mes = (iMesa  > -1 && row[iMesa])  ? String(row[iMesa])  : '';
+
+      const tienePrevios = [dep, mun, pue, dir, mes].some(v => v.trim().length > 0);
+
+      if (tienePrevios) {
+        document.getElementById('departamento').value = dep;
+        document.getElementById('municipio').value    = mun;
+        document.getElementById('puesto').value       = pue;
+        document.getElementById('direccion').value    = dir;
+        document.getElementById('mesa').value         = mes;
+        document.getElementById('btnGuardarVotacion').textContent = "Actualizar";
+      } else {
+        document.getElementById('btnGuardarVotacion').textContent = "Guardar";
       }
-      const rawNuip = String(row0[idxNuip] ?? '');
-      if (rawNuip && navigator.clipboard) {
-        navigator.clipboard.writeText(rawNuip.replace(/\D+/g,'')).catch(()=>{});
-      }
-    } catch(e){}
-
-    // 2) Limpiar campos del modal
-    document.getElementById('datos_row').value = "";
-    document.getElementById('nuip').value = "";
-    document.getElementById('departamento').value = "";
-    document.getElementById('municipio').value = "";
-    document.getElementById('puesto').value = "";
-    document.getElementById('direccion').value = "";
-    document.getElementById('mesa').value = "";
-
-    const row = tabla.row(idxFila).data();
-
-    // Helpers de índices (tus mismos helpers)
-    const idxByHeader = (...cands) => {
-      for (const c of cands) { if (!c) continue;
-        const i = encabezados.indexOf(c); if (i > -1) return i;
-      } return -1;
-    };
-    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
-
-    // Columnas por nombre con fallback a letras
-    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),             idxByHeader('I'));
-    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),             idxByHeader('J'));
-    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                   idxByHeader('K'));
-    const iMesa  = firstValid(idxByHeader('MESA'),                                    idxByHeader('L'));
-
-    // 3) UBICAR LA COLUMNA DEL DOCUMENTO POR ENCABEZADO y poner el NUIP LIMPIO en el input
-    const headersNorm = (encabezados || []).map(h => String(h || '').trim().toUpperCase());
-    const candidatosNuip = ['NUIP','DOCUMENTO','DOCUMENTO/NUIP','CEDULA','CÉDULA'];
-    let iNuip = 0;
-    for (const c of candidatosNuip) {
-      const i = headersNorm.indexOf(c);
-      if (i >= 0) { iNuip = i; break; }
+      new bootstrap.Modal(document.getElementById('modalVotacion')).show();
     }
-    const nuipRaw = (row && row[iNuip] != null) ? String(row[iNuip]) : "";
-    document.getElementById('nuip').value = nuipRaw.replace(/\D+/g,'');
-
-    // 4) Rellenar previos si existen
-    const dep = (iDepto > -1 && row[iDepto]) ? String(row[iDepto]) : '';
-    const mun = (iMun   > -1 && row[iMun])   ? String(row[iMun])   : '';
-    const pue = (iPue   > -1 && row[iPue])   ? String(row[iPue])   : '';
-    const dir = (iDir   > -1 && row[iDir])   ? String(row[iDir])   : '';
-    const mes = (iMesa  > -1 && row[iMesa])  ? String(row[iMesa])  : '';
-
-    const tienePrevios = [dep, mun, pue, dir, mes].some(v => v.trim().length > 0);
-    if (tienePrevios) {
-      document.getElementById('departamento').value = dep;
-      document.getElementById('municipio').value    = mun;
-      document.getElementById('puesto').value       = pue;
-      document.getElementById('direccion').value    = dir;
-      document.getElementById('mesa').value         = mes;
-      document.getElementById('btnGuardarVotacion').textContent = "Actualizar";
-    } else {
-      document.getElementById('btnGuardarVotacion').textContent = "Guardar";
-    }
-
-    new bootstrap.Modal(document.getElementById('modalVotacion')).show();
-  }
 
     const ENCABEZADOS = ["NUIP", "DEPARTAMENTO", "MUNICIPIO", "PUESTO", "DIRECCIÓN", "MESA"];
     function limpiarYSeparar(texto) {
@@ -1031,7 +1034,7 @@
       const pasted = textarea.value.trim();
       const partes = limpiarYSeparar(pasted);
       if (partes.length === 6) {
-        document.getElementById('nuip').value = String(partes[0]).replace(/\D+/g,'');
+        document.getElementById('nuip').value = partes[0];
         document.getElementById('departamento').value = partes[1];
         document.getElementById('municipio').value = partes[2];
         document.getElementById('puesto').value = partes[3];
@@ -1048,96 +1051,120 @@
 
     // Guardar o actualizar datos de votación (actualización en sitio, preserva orden/paginación/filtros)
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
-    e.preventDefault();
+  e.preventDefault();
 
-    // NUIP limpio (solo dígitos)
-    const nuipClean = document.getElementById('nuip').value.replace(/\D+/g,'').trim();
+  const nuip = document.getElementById('nuip').value.trim();
+  let departamento = document.getElementById('departamento').value.trim();
+  let municipio    = document.getElementById('municipio').value.trim();
+  let puesto       = document.getElementById('puesto').value.trim();
+  let direccion    = document.getElementById('direccion').value.trim();
+  let mesa         = document.getElementById('mesa').value.trim();
 
-    let departamento = document.getElementById('departamento').value.trim();
-    let municipio    = document.getElementById('municipio').value.trim();
-    let puesto       = document.getElementById('puesto').value.trim();
-    let direccion    = document.getElementById('direccion').value.trim();
-    let mesa         = document.getElementById('mesa').value.trim();
+  const onlyMunicipioMode = isEstadoCheckboxActive();
 
-    const onlyMunicipioMode = isEstadoCheckboxActive();
-
-    if (onlyMunicipioMode){
-      if (!nuipClean || !municipio){
-        Swal.fire({icon:'warning',title:'Completa los campos requeridos',text:'NUIP y MUNICIPIO son obligatorios cuando marcas el estado.'});
-        return;
-      }
-      // Preservar los demás valores de la fila si vienen vacíos
-      const row = tabla.row(filaVotacion).data() || [];
-      const idxByHeader = (...cands) => { for (const c of cands) { if (!c) continue; const i = encabezados.indexOf(c); if (i > -1) return i; } return -1; };
-      const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
-      const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-      const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),             idxByHeader('J'));
-      const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                   idxByHeader('K'));
-      const iMesa  = firstValid(idxByHeader('MESA'),                                    idxByHeader('L'));
-      if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
-      if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
-      if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
-      if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
-    } else {
-      if(!nuipClean || !departamento || !municipio || !puesto || !direccion || !mesa){
-        Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
-        return;
-      }
+  if (onlyMunicipioMode){
+    // Solo exigimos NUIP + MUNICIPIO
+    if (!nuip || !municipio){
+      Swal.fire({icon:'warning',title:'Completa los campos requeridos',text:'NUIP y MUNICIPIO son obligatorios cuando marcas el estado.'});
+      return;
     }
 
-    try {
-      const res = await apiGuardarVotacion({
-        idxFila: filaVotacion,
-        nuip: nuipClean,           // <- MUY IMPORTANTE: enviar limpio
-        departamento,
-        municipio,
-        puesto,
-        direccion,
-        mesa
-      });
-      if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
+    // Rellenar los demás campos con los valores actuales de la fila para NO cambiarlos
+    const row = tabla.row(filaVotacion).data() || [];
 
-      // Actualizar la fila en pantalla (igual que tu lógica actual)
-      const idxByHeader = (...cands) => { for (const c of cands) { if (!c) continue; const i = encabezados.indexOf(c); if (i > -1) return i; } return -1; };
-      const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
-      const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-      const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),             idxByHeader('I'));
-      const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),             idxByHeader('J'));
-      const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                   idxByHeader('K'));
-      const iMesa  = firstValid(idxByHeader('MESA'),                                    idxByHeader('L'));
+    // Helpers locales para obtener índices por encabezado (con fallback letras G..L)
+    const idxByHeader = (...cands) => {
+      for (const c of cands) {
+        if (!c) continue;
+        const i = encabezados.indexOf(c);
+        if (i > -1) return i;
+      }
+      return -1;
+    };
+    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
 
-      let nuevaFila = tabla.row(filaVotacion).data().slice();
-      if (iDepto > -1 && departamento) nuevaFila[iDepto] = departamento;
-      if (iMun   > -1 && municipio)    nuevaFila[iMun]   = municipio;
-      if (iPue   > -1 && puesto)       nuevaFila[iPue]   = puesto;
-      if (iDir   > -1 && direccion)    nuevaFila[iDir]   = direccion;
-      if (iMesa  > -1 && mesa)         nuevaFila[iMesa]  = mesa;
-      tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+    const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-      const tr = tabla.row(filaVotacion).node();
-      [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
-        if (i > -1 && tr && tr.children[i]) {
-          tr.children[i].classList.add('resaltado-cambio');
-          setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
-        }
-      });
-
-      bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
-      Swal.fire({
-        icon: 'success',
-        title: '¡Datos actualizados!',
-        html: (onlyMunicipioMode
-          ? 'Se actualizó únicamente el <b>MUNICIPIO</b>.'
-          : 'Los datos se guardaron correctamente.'
-        ),
-        timer: 3000,
-        showConfirmButton: false
-      });
-    } catch (err) {
-      Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
+    // Si algún campo (que no es municipio) quedó vacío, lo tomamos de la tabla para preservarlo
+    if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
+    if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
+    if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
+    if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
+    // municipio ya lo fijamos por el check
+  } else {
+    // Modo normal: exige todo, como antes
+    if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
+      Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
+      return;
     }
-  });
-    
+  }
+
+  try {
+    const res = await apiGuardarVotacion({
+      idxFila: filaVotacion,
+      nuip,
+      departamento,
+      municipio,
+      puesto,
+      direccion,
+      mesa
+    });
+    if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
+
+    // Actualiza locales por nombre con fallback a letras G..L
+    const idxByHeader = (...cands) => {
+      for (const c of cands) {
+        if (!c) continue;
+        const i = encabezados.indexOf(c);
+        if (i > -1) return i;
+      }
+      return -1;
+    };
+    const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
+
+    const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+    const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+    const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+    const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+    const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
+
+    let nuevaFila = tabla.row(filaVotacion).data().slice();
+    if (iDepto > -1) nuevaFila[iDepto] = departamento;
+    if (iMun   > -1) nuevaFila[iMun]   = municipio;
+    if (iPue   > -1) nuevaFila[iPue]   = puesto;
+    if (iDir   > -1) nuevaFila[iDir]   = direccion;
+    if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+
+    tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+
+    // Resaltar cambios (especialmente MUNICIPIO en modo check)
+    const tr = tabla.row(filaVotacion).node();
+    [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
+      if (i > -1 && tr && tr.children[i]) {
+        tr.children[i].classList.add('resaltado-cambio');
+        setTimeout(()=>{ tr.children[i].classList.remove('resaltado-cambio'); }, 2000);
+      }
+    });
+
+    bootstrap.Modal.getInstance(document.getElementById('modalVotacion')).hide();
+    Swal.fire({
+      icon: 'success',
+      title: '¡Datos actualizados!',
+      html: (onlyMunicipioMode
+        ? 'Se actualizó únicamente el <b>MUNICIPIO</b>.'
+        : 'Los datos se guardaron correctamente.'
+      ) + '<br>Recuerda: algunas columnas pueden estar ocultas.<br>Usa <b>Filtrar Columnas</b> si necesitas verlas.',
+      timer: 3500,
+      showConfirmButton: false
+    });
+  } catch (err) {
+    Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
+  }
+});
    function isEstadoCheckboxActive(){
   const chkA = document.getElementById('chkALaEspera');
   const chkP = document.getElementById('chkPorConfirmar');
