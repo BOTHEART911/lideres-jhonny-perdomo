@@ -546,7 +546,17 @@
         const url = new URL(WEB_APP_URL);
         url.searchParams.set('action', 'validarLider');
         url.searchParams.set('documento', documento);
-        const resp = await fetch(url.toString(), { method: 'GET' });
+        // Cache-buster para evitar respuestas en caché
+        url.searchParams.set('t', Date.now().toString());
+        const resp = await fetch(url.toString(), {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return await resp.json();
       } finally { stopLoading(); }
@@ -562,6 +572,7 @@
         });
         const resp = await fetch(WEB_APP_URL, {
           method: 'POST',
+          cache: 'no-store',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body
         });
@@ -581,6 +592,7 @@
         });
         const resp = await fetch(WEB_APP_URL, {
           method: 'POST',
+          cache: 'no-store',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body
         });
