@@ -1166,6 +1166,9 @@
     Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
   }
 });
+
+    validarDocumento(true);
+    
    function isEstadoCheckboxActive(){
   const chkA = document.getElementById('chkALaEspera');
   const chkP = document.getElementById('chkPorConfirmar');
