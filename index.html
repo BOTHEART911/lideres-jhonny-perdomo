@@ -470,8 +470,8 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script> -->
-  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
+  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.bootstrap5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.dataTables.min.js"></script>
@@ -541,27 +541,26 @@
 
     // 2) Adaptadores API (fetch)
     async function apiValidarLider(documento) {
-      startLoading();
-      try{
-        const url = new URL(WEB_APP_URL);
-        url.searchParams.set('action', 'validarLider');
-        url.searchParams.set('documento', documento);
-        url.searchParams.set('t', Date.now().toString()); // cache-buster
-        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        return await resp.json();
-      } finally { stopLoading(); }
-    }
+  startLoading();
+  try{
+    const url = new URL(WEB_APP_URL);
+    url.searchParams.set('action', 'validarLider');
+    url.searchParams.set('documento', documento);
+    url.searchParams.set('t', Date.now().toString()); // cache-buster
+    const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return await resp.json();
+  } finally { stopLoading(); }
+}
 
     async function apiGuardarVotacion({ idxFila, nuip, departamento, municipio, puesto, direccion, mesa }) {
       startLoading();
       try{
         const body = new URLSearchParams({
-  action: 'guardarVotacion',
-  documento: documentoGuardado || '', // <- opcional: por si tu GAS lo requiere
-  idxFila: idxFila != null ? String(idxFila) : '',
-  nuip, departamento, municipio, puesto, direccion, mesa
-});
+          action: 'guardarVotacion',
+          idxFila: idxFila != null ? String(idxFila) : '',
+          nuip, departamento, municipio, puesto, direccion, mesa
+        });
         const resp = await fetch(WEB_APP_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -599,8 +598,6 @@
     let documentoGuardado = ""; // Para recarga directa
     let deleteMode = false;
     let selectedNuips = new Set();
-    let totalFilasActivas = 0; // usado para mapear índice visible -> índice original en la hoja
-    let idxOriginalCol = -1;   // índice de la columna oculta con el índice original de la hoja
 
     // Columnas a ocultar por defecto (índices de encabezados)
     const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA", "ESTADO"];
@@ -703,56 +700,33 @@
         .css('text-align', 'center');
     }
 
-    function getIdxFilaServidorFromDisplay(displayIdx){
-  const di = Number(displayIdx);
-  return (totalFilasActivas > 0 && di >= 0 && di < totalFilasActivas)
-    ? (totalFilasActivas - 1 - di)
-    : di;
-}
-
     function inicializarTabla() {
-  // Reset seguro (destruye DT si existe, antes de tocar el DOM)
-  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-    $('#tablaReferidos').DataTable().destroy();
-    // OJO: NO usar $('#tablaReferidos').empty();
-  }
   // 0) Determinar índice de la columna ESTADO (por nombre o fallback a O=14)
   let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
   if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
 
-  // 1) Definir columnas de la tabla (manteniendo tus 3 extras + 1 oculta para índice original)
-let colsDT = encabezados.map(header => ({ title: header }));
-colsDT.push({ title: "Votación" });
-colsDT.push({ title: "WhatsApp" });
-colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
-colsDT.push({ title: "IDX_ORIGINAL" }); // NUEVA: oculta, guarda el índice original en la hoja
+  // 1) Definir columnas de la tabla (manteniendo tus 3 extras)
+  let colsDT = encabezados.map(header => ({ title: header }));
+  colsDT.push({ title: "Votación" });
+  colsDT.push({ title: "WhatsApp" });
+  colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
 
   // Encabezados y pie
   $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
-$("#tablaReferidos tfoot").html(""); // pie vacío
+  $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
-  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y preparar datos con el índice original
-const filasActivas = [];
-const idxsOriginales = [];
-for (let i = 0; i < filasFiltradas.length; i++) {
-  const row = filasFiltradas[i];
-  if (String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO') {
-    filasActivas.push(row);
-    idxsOriginales.push(i); // guardamos el índice original en res.filas
+  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
+  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
+  const filasSoloActivas = Array.isArray(filasFiltradas)
+    ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
+    : [];
+  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
+
+  // 3) Reset de DataTable si ya existe
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+    $('#tablaReferidos').DataTable().destroy();
+    $('#tablaReferidos').empty();
   }
-}
-totalFilasActivas = filasActivas.length;
-
-// Última fila primero: recorremos desde el final
-const data = [];
-for (let k = filasActivas.length - 1; k >= 0; k--) {
-  const row = filasActivas[k];
-  const idxOriginal = idxsOriginales[k];
-  // Agregamos 3 columnas visuales ("", "", "") y al final el índice original como string
-  data.push([...row, "", "", "", String(idxOriginal)]);
-}
-
-  
 
   // 4) Ocultar columnas por nombre (tu lista) y asegurar ocultar ESTADO
   const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
@@ -771,10 +745,9 @@ for (let k = filasActivas.length - 1; k >= 0; k--) {
   ];
 
   // 6) Índices de las columnas especiales (últimas tres)
-  const idxVotacion   = colsDT.length - 4;
-const idxWhatsapp   = colsDT.length - 3;
-const idxSeleccion  = colsDT.length - 2;
-idxOriginalCol      = colsDT.length - 1; // columna oculta con el índice original
+  const idxVotacion = colsDT.length - 3;
+  const idxWhatsapp = colsDT.length - 2;
+  const idxSeleccion = colsDT.length - 1;
 
   // 7) Botones nativos de DataTables para Eliminar / Confirmar / Descartar (igual a tu código)
   const btnEliminar = {
@@ -882,68 +855,66 @@ idxOriginalCol      = colsDT.length - 1; // columna oculta con el índice origin
     lengthMenu: [5, 10, 20, 50, 100],
     columns: colsDT,
     data: data,
-    order: [], // sin orden por columna
+    order: [[0, 'asc']],
     buttons: buttonsArr,
     columnDefs: [
-  // Oculta las columnas calculadas por nombre + ESTADO
-  ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
+      // Oculta las columnas calculadas por nombre + ESTADO
+      ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
+      {
+        targets: idxVotacion,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+          var municipio = "";
+          if (idxMunicipio > -1) {
+            municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+          }
 
-  // NUEVO: si existe idxOriginalCol, ocúltalo (índice original de la hoja)
-  ...(typeof idxOriginalCol !== 'undefined' && idxOriginalCol > -1
-      ? [{ targets: idxOriginalCol, visible: false, searchable: false }]
-      : []),
+          // Colores según estado del MUNICIPIO:
+          // - "A LA ESPERA"   => gris
+          // - "POR CONFIRMAR" => naranja
+          // - "SIN CONSULTAR" => azul
+          // - "FLANDES"       => verde
+          // - Otros           => rojo (por defecto .btn-votacion)
+          var colorClass =
+            municipio === "A LA ESPERA"   ? "gris"    :
+            municipio === "POR CONFIRMAR" ? "naranja" :
+            municipio === "SIN CONSULTAR" ? "azul"    :
+            municipio === "FLANDES"       ? "verde"   : "";
 
-  {
-    targets: idxVotacion,
-    orderable: false,
-    searchable: false,
-    className: 'text-center',
-    render: function(data, type, row, meta) {
-      var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-      var municipio = "";
-      if (idxMunicipio > -1) {
-        municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
+          return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+        }
+      },
+      {
+        targets: idxWhatsapp,
+        orderable: false,
+        searchable: false,
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
+        }
+      },
+      {
+        targets: idxSeleccion,
+        orderable: false,
+        searchable: false,
+        visible: false, // oculto por defecto
+        className: 'text-center',
+        render: function(data, type, row, meta) {
+          const nuip = (row && row[0] != null) ? String(row[0]) : '';
+          const checked = selectedNuips.has(nuip) ? 'checked' : '';
+          return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
+        }
       }
-
-      // Colores según estado del MUNICIPIO
-      var colorClass =
-        municipio === "A LA ESPERA"   ? "gris"    :
-        municipio === "POR CONFIRMAR" ? "naranja" :
-        municipio === "SIN CONSULTAR" ? "azul"    :
-        municipio === "FLANDES"       ? "verde"   : "";
-
-      return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-    }
-  },
-  {
-    targets: idxWhatsapp,
-    orderable: false,
-    searchable: false,
-    className: 'text-center',
-    render: function(data, type, row, meta) {
-      return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
-    }
-  },
-  {
-    targets: idxSeleccion,
-    orderable: false,
-    searchable: false,
-    visible: false, // oculto por defecto
-    className: 'text-center',
-    render: function(data, type, row, meta) {
-      const nuip = (row && row[0] != null) ? String(row[0]) : '';
-      const checked = selectedNuips.has(nuip) ? 'checked' : '';
-      return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
-    }
-  }
-]
+    ]
   });
 
   // 9) Eventos y helpers (sin cambios)
   tabla.off('draw');
   tabla.on('draw', centrarEncabezadosTabla);
   centrarEncabezadosTabla();
-
 
   // Delegación para checkboxes de filas
   $('#tablaReferidos tbody').off('change', 'input.row-select');
@@ -1134,12 +1105,15 @@ idxOriginalCol      = colsDT.length - 1; // columna oculta con el índice origin
   }
 
   try {
-    const filaData = tabla.row(filaVotacion).data() || [];
-const idxFilaServer = Number(filaData[idxOriginalCol]); // leemos el índice original oculto de la fila
-const res = await apiGuardarVotacion({
-  idxFila: idxFilaServer,
-  nuip, departamento, municipio, puesto, direccion, mesa
-});
+    const res = await apiGuardarVotacion({
+      idxFila: filaVotacion,
+      nuip,
+      departamento,
+      municipio,
+      puesto,
+      direccion,
+      mesa
+    });
     if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
     // Actualiza locales por nombre con fallback a letras G..L
@@ -1206,7 +1180,6 @@ function setOnlyMunicipioModeUI(on){
     ta.readOnly = on;
     ta.disabled = on;
   }
-  
   // Bloquear todos menos MUNICIPIO
   ['departamento','puesto','direccion','mesa'].forEach(id=>{
     const el = document.getElementById(id);
