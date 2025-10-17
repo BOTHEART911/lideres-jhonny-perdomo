@@ -470,8 +470,8 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
+  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
+  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.bootstrap5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.dataTables.min.js"></script>
@@ -541,17 +541,16 @@
 
     // 2) Adaptadores API (fetch)
     async function apiValidarLider(documento) {
-  startLoading();
-  try{
-    const url = new URL(WEB_APP_URL);
-    url.searchParams.set('action', 'validarLider');
-    url.searchParams.set('documento', documento);
-    url.searchParams.set('t', Date.now().toString()); // cache-buster
-    const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    return await resp.json();
-  } finally { stopLoading(); }
-}
+      startLoading();
+      try{
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set('action', 'validarLider');
+        url.searchParams.set('documento', documento);
+        const resp = await fetch(url.toString(), { method: 'GET' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return await resp.json();
+      } finally { stopLoading(); }
+    }
 
     async function apiGuardarVotacion({ idxFila, nuip, departamento, municipio, puesto, direccion, mesa }) {
       startLoading();
@@ -829,7 +828,7 @@
   const btnDescartar = {
     text: `Descartar <span class="ms-1 align-middle">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
+        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 1 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"/>
       </svg>
     </span>`,
     className: 'btn btn-secondary d-none',
@@ -1050,7 +1049,7 @@
     document.getElementById('datos_row').addEventListener('input', intentarAutocompletar);
     document.getElementById('datos_row').addEventListener('blur', intentarAutocompletar);
 
-    // Guardar o actualizar datos de votación (actualización en sitio, preserva orden/paginación/filtros)
+    // Guardar o actualizar datos de votación (AHORA: persistir primero en hoja y refrescar la fila desde la respuesta)
     document.getElementById('formVotacion').addEventListener('submit', async function(e){
   e.preventDefault();
 
@@ -1090,12 +1089,10 @@
     const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
     const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-    // Si algún campo (que no es municipio) quedó vacío, lo tomamos de la tabla para preservarlo
     if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
     if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
     if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
     if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
-    // municipio ya lo fijamos por el check
   } else {
     // Modo normal: exige todo, como antes
     if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
@@ -1116,7 +1113,46 @@
     });
     if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
-    // Actualiza locales por nombre con fallback a letras G..L
+    // NUEVO: refrescar la fila desde lo que devuelve la hoja (persistido primero)
+    if (Array.isArray(res.fila) && Array.isArray(res.encabezados)) {
+      // Mantén globales si coincidieran; si la hoja cambió estructura, tomamos la de respuesta
+      if (JSON.stringify(encabezados) !== JSON.stringify(res.encabezados)) {
+        encabezados = res.encabezados.slice();
+      }
+      // La DataTable tiene 3 columnas extra al final; añadimos placeholders
+      const nuevaFilaDesdeHoja = res.fila.slice();
+      const nuevaData = [...nuevaFilaDesdeHoja, "", "", ""];
+
+      tabla.row(filaVotacion).data(nuevaData).invalidate().draw(false);
+    } else {
+      // Fallback: lógica previa (mantengo por compatibilidad, aunque normalmente no se usará)
+      const idxByHeader = (...cands) => {
+        for (const c of cands) {
+          if (!c) continue;
+          const i = encabezados.indexOf(c);
+          if (i > -1) return i;
+        }
+        return -1;
+      };
+      const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
+
+      const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+      const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+      const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+      const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+      const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
+
+      let nuevaFila = tabla.row(filaVotacion).data().slice();
+      if (iDepto > -1) nuevaFila[iDepto] = departamento;
+      if (iMun   > -1) nuevaFila[iMun]   = municipio;
+      if (iPue   > -1) nuevaFila[iPue]   = puesto;
+      if (iDir   > -1) nuevaFila[iDir]   = direccion;
+      if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+
+      tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+    }
+
+    // Resaltar cambios (especialmente MUNICIPIO en modo check)
     const idxByHeader = (...cands) => {
       for (const c of cands) {
         if (!c) continue;
@@ -1126,23 +1162,12 @@
       return -1;
     };
     const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
-
     const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
     const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
     const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
     const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
     const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-    let nuevaFila = tabla.row(filaVotacion).data().slice();
-    if (iDepto > -1) nuevaFila[iDepto] = departamento;
-    if (iMun   > -1) nuevaFila[iMun]   = municipio;
-    if (iPue   > -1) nuevaFila[iPue]   = puesto;
-    if (iDir   > -1) nuevaFila[iDir]   = direccion;
-    if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
-
-    tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
-
-    // Resaltar cambios (especialmente MUNICIPIO en modo check)
     const tr = tabla.row(filaVotacion).node();
     [iDepto,iMun,iPue,iDir,iMesa].forEach(i=>{
       if (i > -1 && tr && tr.children[i]) {
@@ -1166,9 +1191,6 @@
     Swal.fire({ icon:'error', title:'Error al guardar', text:String(err) });
   }
 });
-
-    validarDocumento(true);
-    
    function isEstadoCheckboxActive(){
   const chkA = document.getElementById('chkALaEspera');
   const chkP = document.getElementById('chkPorConfirmar');
