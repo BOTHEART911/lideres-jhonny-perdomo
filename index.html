@@ -315,7 +315,6 @@
   </div>
 
 <script>
-  // Maneja checks excluyentes y setea/restituye el valor del campo MUNICIPIO
   function onEstadoCheckboxChange(chk, estado){
     const inputMun = document.getElementById('municipio');
     if (!inputMun) return;
@@ -343,12 +342,10 @@
       }
     }
 
-    // Modo solo municipio: requeridos/UI
     updateDatosRowRequirement();
     setOnlyMunicipioModeUI(isEstadoCheckboxActive());
   }
 
-  // Al mostrar el modal, resetear checks y estado previo
   (function(){
     const modalEl = document.getElementById('modalVotacion');
     if (!modalEl) return;
@@ -395,7 +392,7 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <!-- QUITADO: No usas Responsive y provocaba el error de consola -->
+  <!-- QUITADO: scripts Responsive que causaban error de consola -->
   <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script> -->
   <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
@@ -427,7 +424,6 @@
     function playSoundOnce(url){
       try{ const a = new Audio(url); a.preload = 'auto'; a.play().catch(()=>{}); }catch(e){}
     }
-    // Parchar SweetAlert2 para sonar según icono
     if (window.Swal && typeof Swal.fire === 'function'){
       const __fire = Swal.fire.bind(Swal);
       Swal.fire = function(options = {}, ...rest){
@@ -453,7 +449,7 @@
         url.searchParams.set('action', 'validarLider');
         url.searchParams.set('documento', documento);
         url.searchParams.set('t', Date.now().toString()); // cache-buster
-        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' }); // sin headers para evitar preflight
+        const resp = await fetch(url.toString(), { method: 'GET', cache: 'no-store' }); // sin headers
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return await resp.json();
       } finally { stopLoading(); }
@@ -599,11 +595,11 @@
       $table.find('thead').html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
       $table.find('tfoot').empty();
 
-      // Filtrar ACTIVOS y añadir columnas extra
+      // Filtrar ACTIVOS, invertir orden (última fila primero) y añadir columnas extra
       const filasSoloActivas = Array.isArray(filasFiltradas)
         ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
         : [];
-      let data = filasSoloActivas.map(row => [...row, "", "", ""]);
+      let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); // <-- invertido
 
       // Ocultamientos por nombre + ESTADO
       const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(i=>i>-1);
@@ -701,7 +697,7 @@
         lengthMenu: [5, 10, 20, 50, 100],
         columns: colsDT,
         data: data,
-        order: [[0, 'asc']],
+        order: [], // <-- sin orden inicial; respeta el orden invertido del arreglo
         buttons: buttonsArr,
         columnDefs: [
           ...ocultarIdxs.map(i => ({ targets: i, visible: false })),
