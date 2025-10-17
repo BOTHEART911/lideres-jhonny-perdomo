@@ -557,10 +557,11 @@
       startLoading();
       try{
         const body = new URLSearchParams({
-          action: 'guardarVotacion',
-          idxFila: idxFila != null ? String(idxFila) : '',
-          nuip, departamento, municipio, puesto, direccion, mesa
-        });
+  action: 'guardarVotacion',
+  documento: documentoGuardado || '', // <- opcional: por si tu GAS lo requiere
+  idxFila: idxFila != null ? String(idxFila) : '',
+  nuip, departamento, municipio, puesto, direccion, mesa
+});
         const resp = await fetch(WEB_APP_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -599,6 +600,7 @@
     let deleteMode = false;
     let selectedNuips = new Set();
     let totalFilasActivas = 0; // usado para mapear índice visible -> índice original en la hoja
+    let idxOriginalCol = -1;   // índice de la columna oculta con el índice original de la hoja
 
     // Columnas a ocultar por defecto (índices de encabezados)
     const columnasOcultas = ["CONTACTO", "REFERENCIA", "LIDER", "DEPARTAMENTO", "PUESTO", "DIRECCION", "MESA", "AÑO", "MES", "DIA", "ESTADO"];
@@ -718,23 +720,37 @@
   let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
   if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
 
-  // 1) Definir columnas de la tabla (manteniendo tus 3 extras)
-  let colsDT = encabezados.map(header => ({ title: header }));
-  colsDT.push({ title: "Votación" });
-  colsDT.push({ title: "WhatsApp" });
-  colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
+  // 1) Definir columnas de la tabla (manteniendo tus 3 extras + 1 oculta para índice original)
+let colsDT = encabezados.map(header => ({ title: header }));
+colsDT.push({ title: "Votación" });
+colsDT.push({ title: "WhatsApp" });
+colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
+colsDT.push({ title: "IDX_ORIGINAL" }); // NUEVA: oculta, guarda el índice original en la hoja
 
   // Encabezados y pie
   $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 $("#tablaReferidos tfoot").html(""); // pie vacío
 
-  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
-  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
-  const filasSoloActivas = Array.isArray(filasFiltradas)
-  ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
-  : [];
-totalFilasActivas = filasSoloActivas.length; // nuevo
-let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); // invertido
+  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y preparar datos con el índice original
+const filasActivas = [];
+const idxsOriginales = [];
+for (let i = 0; i < filasFiltradas.length; i++) {
+  const row = filasFiltradas[i];
+  if (String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO') {
+    filasActivas.push(row);
+    idxsOriginales.push(i); // guardamos el índice original en res.filas
+  }
+}
+totalFilasActivas = filasActivas.length;
+
+// Última fila primero: recorremos desde el final
+const data = [];
+for (let k = filasActivas.length - 1; k >= 0; k--) {
+  const row = filasActivas[k];
+  const idxOriginal = idxsOriginales[k];
+  // Agregamos 3 columnas visuales ("", "", "") y al final el índice original como string
+  data.push([...row, "", "", "", String(idxOriginal)]);
+}
 
   
 
@@ -755,9 +771,10 @@ let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); 
   ];
 
   // 6) Índices de las columnas especiales (últimas tres)
-  const idxVotacion = colsDT.length - 3;
-  const idxWhatsapp = colsDT.length - 2;
-  const idxSeleccion = colsDT.length - 1;
+  const idxVotacion   = colsDT.length - 4;
+const idxWhatsapp   = colsDT.length - 3;
+const idxSeleccion  = colsDT.length - 2;
+idxOriginalCol      = colsDT.length - 1; // columna oculta con el índice original
 
   // 7) Botones nativos de DataTables para Eliminar / Confirmar / Descartar (igual a tu código)
   const btnEliminar = {
@@ -868,57 +885,58 @@ let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); 
     order: [], // sin orden por columna
     buttons: buttonsArr,
     columnDefs: [
-      // Oculta las columnas calculadas por nombre + ESTADO
-      ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
-      {
-        targets: idxVotacion,
-        orderable: false,
-        searchable: false,
-        className: 'text-center',
-        render: function(data, type, row, meta) {
-          var idxMunicipio = encabezados.indexOf("MUNICIPIO");
-          var municipio = "";
-          if (idxMunicipio > -1) {
-            municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
-          }
+  // Oculta las columnas calculadas por nombre + ESTADO
+  ...ocultarIdxs.map(idx => ({ targets: idx, visible: false })),
 
-          // Colores según estado del MUNICIPIO:
-          // - "A LA ESPERA"   => gris
-          // - "POR CONFIRMAR" => naranja
-          // - "SIN CONSULTAR" => azul
-          // - "FLANDES"       => verde
-          // - Otros           => rojo (por defecto .btn-votacion)
-          var colorClass =
-            municipio === "A LA ESPERA"   ? "gris"    :
-            municipio === "POR CONFIRMAR" ? "naranja" :
-            municipio === "SIN CONSULTAR" ? "azul"    :
-            municipio === "FLANDES"       ? "verde"   : "";
+  // NUEVO: si existe idxOriginalCol, ocúltalo (índice original de la hoja)
+  ...(typeof idxOriginalCol !== 'undefined' && idxOriginalCol > -1
+      ? [{ targets: idxOriginalCol, visible: false, searchable: false }]
+      : []),
 
-          return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
-        }
-      },
-      {
-        targets: idxWhatsapp,
-        orderable: false,
-        searchable: false,
-        className: 'text-center',
-        render: function(data, type, row, meta) {
-          return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
-        }
-      },
-      {
-        targets: idxSeleccion,
-        orderable: false,
-        searchable: false,
-        visible: false, // oculto por defecto
-        className: 'text-center',
-        render: function(data, type, row, meta) {
-          const nuip = (row && row[0] != null) ? String(row[0]) : '';
-          const checked = selectedNuips.has(nuip) ? 'checked' : '';
-          return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
-        }
+  {
+    targets: idxVotacion,
+    orderable: false,
+    searchable: false,
+    className: 'text-center',
+    render: function(data, type, row, meta) {
+      var idxMunicipio = encabezados.indexOf("MUNICIPIO");
+      var municipio = "";
+      if (idxMunicipio > -1) {
+        municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
       }
-    ]
+
+      // Colores según estado del MUNICIPIO
+      var colorClass =
+        municipio === "A LA ESPERA"   ? "gris"    :
+        municipio === "POR CONFIRMAR" ? "naranja" :
+        municipio === "SIN CONSULTAR" ? "azul"    :
+        municipio === "FLANDES"       ? "verde"   : "";
+
+      return `<button class="btn-votacion${colorClass ? ' ' + colorClass : ''}" data-row="${meta.row}" onclick="abrirModalVotacion(${meta.row})">Votación</button>`;
+    }
+  },
+  {
+    targets: idxWhatsapp,
+    orderable: false,
+    searchable: false,
+    className: 'text-center',
+    render: function(data, type, row, meta) {
+      return `<button class="btn-whatsapp" data-row="${meta.row}" onclick="abrirModalWhatsapp(${meta.row})"><i class="bi bi-whatsapp"></i></button>`;
+    }
+  },
+  {
+    targets: idxSeleccion,
+    orderable: false,
+    searchable: false,
+    visible: false, // oculto por defecto
+    className: 'text-center',
+    render: function(data, type, row, meta) {
+      const nuip = (row && row[0] != null) ? String(row[0]) : '';
+      const checked = selectedNuips.has(nuip) ? 'checked' : '';
+      return `<input type="checkbox" class="form-check-input row-select" data-nuip="${nuip}" ${checked} />`;
+    }
+  }
+]
   });
 
   // 9) Eventos y helpers (sin cambios)
@@ -1116,7 +1134,8 @@ let data = filasSoloActivas.slice().reverse().map(row => [...row, "", "", ""]); 
   }
 
   try {
-    const idxFilaServer = getIdxFilaServidorFromDisplay(filaVotacion);
+    const filaData = tabla.row(filaVotacion).data() || [];
+const idxFilaServer = Number(filaData[idxOriginalCol]); // leemos el índice original oculto de la fila
 const res = await apiGuardarVotacion({
   idxFila: idxFilaServer,
   nuip, departamento, municipio, puesto, direccion, mesa
