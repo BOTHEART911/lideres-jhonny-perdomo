@@ -541,26 +541,25 @@
     }
 
     // 2) Adaptadores API (fetch)
-    async function apiValidarLider(documento) {
-      startLoading();
-      try{
-        const url = new URL(WEB_APP_URL);
-        url.searchParams.set('action', 'validarLider');
-        url.searchParams.set('documento', documento);
-        // EVITAR CACHÉ DEL NAVEGADOR/PROXY: cache-buster + opciones de fetch
-        url.searchParams.set('t', Date.now().toString()); // <-- CAMBIO: cache-buster
-        const resp = await fetch(url.toString(), {
-          method: 'GET',
-          cache: 'no-store',                           // <-- CAMBIO
-          headers: {                                   // <-- CAMBIO
-            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-            'Pragma': 'no-cache'
-          }
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        return await resp.json();
-      } finally { stopLoading(); }
-    }
+async function apiValidarLider(documento) {
+  startLoading();
+  try{
+    const url = new URL(WEB_APP_URL);
+    url.searchParams.set('action', 'validarLider');
+    url.searchParams.set('documento', documento);
+    // Cache-buster para evitar respuestas cacheadas
+    url.searchParams.set('t', Date.now().toString());
+
+    // IMPORTANTE: no agregar headers personalizados aquí para evitar preflight CORS
+    const resp = await fetch(url.toString(), {
+      method: 'GET',
+      cache: 'no-store' // opcional; no dispara preflight
+    });
+
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return await resp.json();
+  } finally { stopLoading(); }
+}
 
     async function apiGuardarVotacion({ idxFila, nuip, departamento, municipio, puesto, direccion, mesa }) {
       startLoading();
@@ -1232,7 +1231,7 @@ function onEstadoCheckboxChange(chk, estado){
         delete inputMun.dataset.prevValue;
       }
     } else {
-      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPPERA';
+      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
     }
   }
 
