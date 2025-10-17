@@ -714,12 +714,12 @@
   $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
   $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
-  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
-  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
-  const filasSoloActivas = Array.isArray(filasFiltradas)
-    ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
-    : [];
-  let data = filasSoloActivas.map(row => [...row, "", "", ""]);
+  // 2) Filtrar SOLO filas con ESTADO = ACTIVO y poner la última fila de la hoja primero
+const filasSoloActivas = Array.isArray(filasFiltradas)
+  ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
+  : [];
+const filasOrdenadas = filasSoloActivas.slice().reverse(); // última fila primero
+let data = filasOrdenadas.map(row => [...row, "", "", ""]);
 
   // 3) Reset de DataTable si ya existe
   if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
@@ -854,7 +854,7 @@
     lengthMenu: [5, 10, 20, 50, 100],
     columns: colsDT,
     data: data,
-    order: [[0, 'asc']],
+    order: [],
     buttons: buttonsArr,
     columnDefs: [
       // Oculta las columnas calculadas por nombre + ESTADO
@@ -1114,44 +1114,37 @@
     if (!res || res.ok !== true) throw new Error(res && res.error ? res.error : 'No se pudo guardar');
 
     // NUEVO: refrescar la fila desde lo que devuelve la hoja (persistido primero)
-    if (Array.isArray(res.fila) && Array.isArray(res.encabezados)) {
-      // Mantén globales si coincidieran; si la hoja cambió estructura, tomamos la de respuesta
-      if (JSON.stringify(encabezados) !== JSON.stringify(res.encabezados)) {
-        encabezados = res.encabezados.slice();
-      }
-      // La DataTable tiene 3 columnas extra al final; añadimos placeholders
-      const nuevaFilaDesdeHoja = res.fila.slice();
-      const nuevaData = [...nuevaFilaDesdeHoja, "", "", ""];
-
-      tabla.row(filaVotacion).data(nuevaData).invalidate().draw(false);
-    } else {
-      // Fallback: lógica previa (mantengo por compatibilidad, aunque normalmente no se usará)
-      const idxByHeader = (...cands) => {
-        for (const c of cands) {
-          if (!c) continue;
-          const i = encabezados.indexOf(c);
-          if (i > -1) return i;
-        }
-        return -1;
-      };
-      const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
-
-      const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
-      const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
-      const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
-      const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
-      const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
-
-      let nuevaFila = tabla.row(filaVotacion).data().slice();
-      if (iDepto > -1) nuevaFila[iDepto] = departamento;
-      if (iMun   > -1) nuevaFila[iMun]   = municipio;
-      if (iPue   > -1) nuevaFila[iPue]   = puesto;
-      if (iDir   > -1) nuevaFila[iDir]   = direccion;
-      if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
-
-      tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+    // Refrescar la fila con lo que devolvió la hoja (persistido)
+if (Array.isArray(res.fila) && Array.isArray(res.encabezados)) {
+  if (JSON.stringify(encabezados) !== JSON.stringify(res.encabezados)) {
+    encabezados = res.encabezados.slice();
+  }
+  const nuevaData = [...res.fila.slice(), "", "", ""]; // añadir 3 columnas virtuales
+  tabla.row(filaVotacion).data(nuevaData).invalidate().draw(false);
+} else {
+  // Fallback (por compatibilidad, normalmente no se usa)
+  const idxByHeader = (...cands) => {
+    for (const c of cands) {
+      if (!c) continue;
+      const i = encabezados.indexOf(c);
+      if (i > -1) return i;
     }
-
+    return -1;
+  };
+  const firstValid = (...idxs) => { for (const i of idxs) if (i > -1) return i; return -1; };
+  const iDepto = firstValid(idxByHeader('DEPARTAMENTO','Depto','DEPARTAMENTO/DPTO'), idxByHeader('H'));
+  const iMun   = firstValid(idxByHeader('MUNICIPIO','MUNICIPIO/MCPIO'),           idxByHeader('I'));
+  const iPue   = firstValid(idxByHeader('PUESTO','PUESTO DE VOTACIÓN'),           idxByHeader('J'));
+  const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
+  const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
+  let nuevaFila = tabla.row(filaVotacion).data().slice();
+  if (iDepto > -1) nuevaFila[iDepto] = departamento;
+  if (iMun   > -1) nuevaFila[iMun]   = municipio;
+  if (iPue   > -1) nuevaFila[iPue]   = puesto;
+  if (iDir   > -1) nuevaFila[iDir]   = direccion;
+  if (iMesa  > -1) nuevaFila[iMesa]  = mesa;
+  tabla.row(filaVotacion).data(nuevaFila).invalidate().draw(false);
+}
     // Resaltar cambios (especialmente MUNICIPIO en modo check)
     const idxByHeader = (...cands) => {
       for (const c of cands) {
