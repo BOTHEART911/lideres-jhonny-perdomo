@@ -470,8 +470,9 @@
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
-  <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script>
+  <!-- QUITADO: No usas Responsive y provoca el error de consola -->
+  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script> -->
+  <!-- <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.bootstrap5.js"></script> -->
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/dataTables.buttons.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.bootstrap5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/3.2.3/js/buttons.dataTables.min.js"></script>
@@ -546,7 +547,16 @@
         const url = new URL(WEB_APP_URL);
         url.searchParams.set('action', 'validarLider');
         url.searchParams.set('documento', documento);
-        const resp = await fetch(url.toString(), { method: 'GET' });
+        // EVITAR CACHÉ DEL NAVEGADOR/PROXY: cache-buster + opciones de fetch
+        url.searchParams.set('t', Date.now().toString()); // <-- CAMBIO: cache-buster
+        const resp = await fetch(url.toString(), {
+          method: 'GET',
+          cache: 'no-store',                           // <-- CAMBIO
+          headers: {                                   // <-- CAMBIO
+            'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return await resp.json();
       } finally { stopLoading(); }
@@ -562,8 +572,8 @@
         });
         const resp = await fetch(WEB_APP_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        , body
         });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return await resp.json();
@@ -700,6 +710,12 @@
     }
 
     function inicializarTabla() {
+  // --- CAMBIO DE ORDEN: destruir/limpiar antes de reconstruir encabezados ---
+  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
+    $('#tablaReferidos').DataTable().destroy();
+    $('#tablaReferidos').empty(); // deja la tabla limpia para rearmar thead/tfoot
+  }
+
   // 0) Determinar índice de la columna ESTADO (por nombre o fallback a O=14)
   let idxEstado = encabezados.findIndex(h => String(h || '').trim().toUpperCase() === 'ESTADO');
   if (idxEstado === -1 && encabezados.length >= 15) idxEstado = 14; // Columna O
@@ -711,21 +727,15 @@
   colsDT.push({ title: "Seleccionar" }); // Columna para checkboxes (oculta por defecto)
 
   // Encabezados y pie
+  $("#tablaReferidos").append("<thead></thead><tbody></tbody><tfoot></tfoot>");
   $("#tablaReferidos thead").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
   $("#tablaReferidos tfoot").html("<tr>"+colsDT.map(col=>`<th class='text-center'>${col.title}</th>`).join("")+"</tr>");
 
   // 2) Filtrar SOLO filas con ESTADO = ACTIVO y agregar 3 columnas vacías
-  //    (No se elimina nada de tu lógica: solo se filtra antes de construir "data")
   const filasSoloActivas = Array.isArray(filasFiltradas)
     ? filasFiltradas.filter(row => String(row?.[idxEstado] || '').trim().toUpperCase() === 'ACTIVO')
     : [];
   let data = filasSoloActivas.map(row => [...row, "", "", ""]);
-
-  // 3) Reset de DataTable si ya existe
-  if ($.fn.DataTable.isDataTable('#tablaReferidos')) {
-    $('#tablaReferidos').DataTable().destroy();
-    $('#tablaReferidos').empty();
-  }
 
   // 4) Ocultar columnas por nombre (tu lista) y asegurar ocultar ESTADO
   const ocultarIdxs = columnasOcultas.map(col => encabezados.indexOf(col)).filter(idx=>idx>-1);
@@ -843,7 +853,7 @@
     ? [...adminExportButtons, btnEliminar, btnConfirmar, btnDescartar]
     : [colvisButton];
 
-  // 8) Crear la DataTable (sin cambios salvo ocultar ESTADO ya contemplado)
+  // 8) Crear la DataTable
   tabla = $('#tablaReferidos').DataTable({
     language: { url: "//cdn.datatables.net/plug-ins/2.3.2/i18n/es-CO.json" },
     responsive: false,
@@ -871,12 +881,6 @@
             municipio = (row[idxMunicipio] || "").toString().trim().toUpperCase();
           }
 
-          // Colores según estado del MUNICIPIO:
-          // - "A LA ESPERA"   => gris
-          // - "POR CONFIRMAR" => naranja
-          // - "SIN CONSULTAR" => azul
-          // - "FLANDES"       => verde
-          // - Otros           => rojo (por defecto .btn-votacion)
           var colorClass =
             municipio === "A LA ESPERA"   ? "gris"    :
             municipio === "POR CONFIRMAR" ? "naranja" :
@@ -910,7 +914,7 @@
     ]
   });
 
-  // 9) Eventos y helpers (sin cambios)
+  // 9) Eventos y helpers
   tabla.off('draw');
   tabla.on('draw', centrarEncabezadosTabla);
   centrarEncabezadosTabla();
@@ -1089,14 +1093,11 @@
     const iDir   = firstValid(idxByHeader('DIRECCION','DIRECCIÓN'),                 idxByHeader('K'));
     const iMesa  = firstValid(idxByHeader('MESA'),                                   idxByHeader('L'));
 
-    // Si algún campo (que no es municipio) quedó vacío, lo tomamos de la tabla para preservarlo
     if (!departamento && iDepto > -1) departamento = String(row[iDepto] || '');
     if (!puesto       && iPue   > -1) puesto       = String(row[iPue]   || '');
     if (!direccion    && iDir   > -1) direccion    = String(row[iDir]   || '');
     if (!mesa         && iMesa  > -1) mesa         = String(row[iMesa]  || '');
-    // municipio ya lo fijamos por el check
   } else {
-    // Modo normal: exige todo, como antes
     if(!nuip || !departamento || !municipio || !puesto || !direccion || !mesa){
       Swal.fire({icon:'warning',title:'Completa todos los campos',text:'Verifica que la información esté completa.'});
       return;
@@ -1184,7 +1185,6 @@ function setOnlyMunicipioModeUI(on){
     const el = document.getElementById(id);
     if (el) el.disabled = on;
   });
-  // MUNICIPIO: no lo habilitamos para escritura; lo fijan los checks. Lo mantenemos habilitado (sin disabled) pero puede seguir readonly.
   const mun = document.getElementById('municipio');
   if (mun){ mun.disabled = false; }
 }
@@ -1232,7 +1232,7 @@ function onEstadoCheckboxChange(chk, estado){
         delete inputMun.dataset.prevValue;
       }
     } else {
-      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPERA';
+      inputMun.value = (chkP && chkP.checked) ? 'POR CONFIRMAR' : 'A LA ESPPERA';
     }
   }
 
