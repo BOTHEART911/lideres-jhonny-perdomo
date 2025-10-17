@@ -1206,6 +1206,7 @@ function setOnlyMunicipioModeUI(on){
     ta.readOnly = on;
     ta.disabled = on;
   }
+  
   // Bloquear todos menos MUNICIPIO
   ['departamento','puesto','direccion','mesa'].forEach(id=>{
     const el = document.getElementById(id);
